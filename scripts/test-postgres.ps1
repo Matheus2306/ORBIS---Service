@@ -60,6 +60,6 @@ try {
         & $pgCtl -D $dataPath -m fast -w stop
         if ($LASTEXITCODE -ne 0) { Write-Warning "Cluster cleanup failed; inspect $dataPath"; $testExitCode = 1 }
     }
-    Write-Output "Sanitized test evidence directory: $runRoot"
+    Write-Output "Local test evidence directory (review before sharing): $runRoot"
 }
 exit $testExitCode

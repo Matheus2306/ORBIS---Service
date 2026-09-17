@@ -1,19 +1,19 @@
 using System.Net;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net.Http.Headers;
 
 namespace Orbis.IntegrationTests;
 
-public sealed class HealthContractTests
+[Collection("Database")]
+public sealed class HealthContractTests(DatabaseFixture database)
 {
     [Fact]
-    public async Task LivenessDoesNotClaimBusinessReadiness()
+    public async Task HealthyDatabaseAllowsReadinessWithoutExposingOpenApiInTesting()
     {
-        await using var application = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+        await using var application = new ApiFactory(database);
         using var client = application.CreateClient();
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/health/live")).StatusCode);
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await client.GetAsync("/health/ready")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/health/ready")).StatusCode);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", application.Token(database.UserA));
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/openapi/v1.json")).StatusCode);
     }
 }

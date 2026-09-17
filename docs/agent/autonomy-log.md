@@ -15,3 +15,7 @@ Problema: banco saudável em log, mas nenhum teste executado. Causa: Start-Proce
 ## AUT-004 — alinhar EF Relational
 
 Problema: ao usar APIs relacionais, build detectou assembly 10.0.4 transitivo versus 10.0.12 usado pelo design tooling. Decisão: referência direta e centralizada de EF Relational 10.0.12, sem suprimir warning. Nova medição: build com -warnaserror, zero avisos/erros, testes reais aprovados. Isso é correção de compatibilidade, não otimização de performance.
+
+## AUT-005 — identidade e guard operacional
+
+Problema: RLS no banco não prova autorização HTTP. Implementação: diretório persistido, JWT real, membership por request e autorização de recurso. Revisão independente apontou health anônimo amplificando consultas e falta de verificação de grants de membership. Decisão: health TTL 5s/single-flight/limite 4; startup sempre novo; guard nega mutação de membership. Evidência: 54 testes reais aprovados, incluindo drift/recuperação. Não foi medido ganho de throughput. Intervenção humana: nenhuma decisão técnica exigida.

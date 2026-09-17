@@ -5,10 +5,10 @@ Data: 2026-09-17. Resultado: **NO-GO**. Repositório em fundação, sem produç�
 | Gate | Estado inicial | Evidência necessária |
 |---|---|---|
 | Produto/jornadas | desenho inicial | três experiências completas e aceite |
-| Build reproduzível/CI | pendente | pipeline verde e artefato imutável |
-| Isolamento/autorização | planejado | API+PostgreSQL+arquivos/jobs, ataques negativos |
+| Build reproduzível/CI | build local Release aprovado; CI pendente | pipeline verde e artefato imutável |
+| Isolamento/autorização | PostgreSQL e GET autenticado testados; restante pendente | 54 testes no relatório HTTP; novos componentes exigem testes próprios |
 | Security review | pendente | SAST/SCA/secrets/container/DAST + revisão |
-| Migrations | pendente | upgrade N/N+1, locks, dataset representativo |
+| Migrations | upgrade local com legado aprovado; escala pendente | N/N+1, locks, dataset representativo |
 | Backup/PITR | ausente | backup criptografado e WAL verificados |
 | Restore | não executado | RPO/RTO medidos e checks de integridade |
 | Observabilidade/alertas | planejado | métricas/traces/logs e alerta recebido |

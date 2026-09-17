@@ -6,4 +6,8 @@ Alternativas: User.TenantId não atende múltiplas relações; login/senhas pró
 
 Web: avaliar BFF com cookie HttpOnly/Secure/SameSite e antiforgery para mutações; API valida assinatura/issuer/audience/lifetime. Não guardar tokens em localStorage. Callback possui state/nonce/PKCE e redirect URI exato. Sem endpoint de token caseiro. Desenvolvimento/testes não podem habilitar bypass em Production.
 
+Implementado: JWT bearer exige `typ=at+jwt`, assinatura RS256/PS256/ES256, issuer exato, audience, expiração, margem de relógio 30s e claims sub/client_id/jti/iat. Issuer+subject não são email e permanecem case-sensitive. O fornecedor precisa atender esse perfil; não relaxar o tipo para aceitar ID tokens. Testes substituem apenas discovery por RSA efêmera, mantendo validação criptográfica. Sem bypass de autenticação ou emissor de tokens no produto.
+
+Semântica de revogação: novo request lê tenant/usuário ativos no diretório e membership no banco primário, sem cache de autorização. Request iniciado antes da suspensão pode concluir se já passou por essas consultas; Read Committed não promete cancelamento retroativo. Comandos financeiros/futuros devem definir atomicidade e eventual bloqueio de linha antes de serem expostos. Não oferecer garantia de revogação instantânea do token no IdP antes de contratar/testar o provedor.
+
 Benchmarks: inexistentes. Riscos: dependência externa, custos por MAU, sequestro de token, tenant confusion e cache de permissão obsoleto. Não selecionar fornecedor sem custos e requisitos de residência/MFA. Reconsiderar ASP.NET Identity hospedado se restrições contratuais/custo justificarem responsabilidade operacional. Produção bloqueada até fluxo real e revogação serem testados.

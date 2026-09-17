@@ -2,5 +2,6 @@
   <ItemGroup>
     <ProjectReference Include="../Orbis.Infrastructure/Orbis.Infrastructure.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
   </ItemGroup>
 </Project>

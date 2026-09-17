@@ -1,9 +1,9 @@
 # Próximas ações
 
-1. Persistir diretório Tenant/Domain e identidade global issuer+subject; roles de control plane separadas.
-2. Resolver host por registro confiável e cruzar JWT válido, tenant ativo e membership ativo.
-3. Entregar detalhe/lista de ordens com autorização por recurso e paginação limitada; testes HTTP maliciosos.
-4. Entregar comandos com idempotência e audit na mesma transação; testar retries/concorrência reais.
-5. Gerar Small dataset e medir baseline Release antes de otimizar; automatizar os gates executáveis em CI.
+1. Entregar criação idempotente com audit na mesma transação; retry paralelo e payload divergente não podem duplicar efeito.
+2. Expor transições de ordens com versão esperada, permissão/recurso, idempotência e audit; testes HTTP de concorrência.
+3. Entregar lista keyset com autorização no SQL, limite/cursor validados e testes contra vazamento/duplicação.
+4. Gerar Small dataset e medir baseline Release, inclusive gerador/servidor e query plans.
+5. Automatizar gates em CI, grants operacionais e provisionamento controlado; depois integrar IdP e portais.
 
 Depois: integração de identidade, UX, anexos, jobs, operacionalização, expansão de carga. Cada etapa referencia os gates de backlog; não publicar antes do readiness review.

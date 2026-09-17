@@ -7,8 +7,9 @@ Estados: **em curso**, **pendente**, **bloqueado**, **concluído com evidência*
 | F0 | P0 | Discovery, ADRs, ameaças, workload e SLO | Documentos e hipóteses explícitas | concluído com evidência: docs iniciais; revisão do threat model acompanha implementação |
 | F1 | P0 | Solução .NET e domínio de acesso/ordens | Release build + invariantes + architecture tests | concluído com evidência: 13 testes, build Release |
 | F2 | P0 | EF, migrations, tenant filters, RLS e FK composta | Banco real, role restrita, ataques cross-tenant e pool reuse | concluído com evidência: relatório de 24 testes; não abrange HTTP de negócio |
-| F3 | P0 | API autenticada, memberships e resolução por host | Assinatura/issuer/audience + membership + recurso + contratos HTTP | pendente |
-| F4 | P0 | Criação/aceite/conclusão e auditoria | Idempotência, 100 atualizações concorrentes, atomicidade | pendente |
+| F3 | P0 | API autenticada, memberships e resolução por host | Assinatura/issuer/audience + membership + recurso + contratos HTTP | concluído com evidência local: 54 testes; IdP operacional em P1 |
+| F4 | P0 | Criação/aceite/conclusão e auditoria | Idempotência, 100 atualizações concorrentes, atomicidade | em curso: criação primeiro |
+| F3b | P0 | Listagem de ordens com keyset | Autorização no SQL, limite/cursor, contrato e isolamento | pendente |
 | F5 | P0 | Dataset Small e baseline Release | RPS/percentis/erros + métricas do gerador e servidor | pendente |
 | F6 | P0 | CI reproduzível | Restore locked, format, build, testes, scanners e perf smoke | pendente |
 | P1 | P1 | IdP real e onboarding do tenant | Convite/revogação/MFA administrativo; nenhuma credencial de demonstração | pendente |

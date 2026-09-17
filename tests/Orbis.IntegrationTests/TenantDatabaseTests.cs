@@ -4,7 +4,8 @@ using Orbis.Domain.WorkOrders;
 
 namespace Orbis.IntegrationTests;
 
-public sealed class TenantDatabaseTests(DatabaseFixture database) : IClassFixture<DatabaseFixture>
+[Collection("Database")]
+public sealed class TenantDatabaseTests(DatabaseFixture database)
 {
     [Fact]
     public async Task RlsProtectsQueriesEvenWhenEfFilterIsBypassed()

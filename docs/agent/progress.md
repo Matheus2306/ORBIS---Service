@@ -11,3 +11,7 @@ Produto, ADR-001 a ADR-010, workload, SLOs, banco, testes e readiness documentad
 ## Persistência e isolamento real
 
 EF Core e migration inicial, RLS ENABLE/FORCE, filtros, FKs compostas, guards e versão de concorrência. PostgreSQL 18.6 efêmero com SCRAM e role runtime restrita. Após corrigir espera do inicializador no Windows, 24/24 testes passaram e cluster foi encerrado. NuGet e Gitleaks sem achados reportados. Evidência e limites em testing/reports. API de negócio ainda ausente; capacidade continua sem medição.
+
+## Diretório e leitura autenticada
+
+Identidade global issuer+subject, tenant/domínio verificado, membership fresco e GET com autorização de recurso. JWT real no teste, sem bypass. Upgrade preserva legado suspenso. Revisão independente concluída; guard contra grants excessivos e health com TTL/concorrência limitada. Build e 54/54 testes aprovados; dois modelos EF alinhados; scanners locais sem achados reportados. IdP real, portais, comandos e performance permanecem pendentes.
