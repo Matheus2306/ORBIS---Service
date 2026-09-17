@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+.artifacts/
+TestResults/
+.env
+.env.*
+!.env.example
+*.user
+*.pfx
+*.key
+*.pem
+**/appsettings.Local.json
+node_modules/
