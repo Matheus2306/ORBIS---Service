@@ -12,6 +12,8 @@ public sealed class TenantDbContext(DbContextOptions<TenantDbContext> options, T
     private Guid TenantId => scope.TenantId;
     public DbSet<Membership> Memberships => Set<Membership>();
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
+    public DbSet<WorkOrderAudit> OrderAudit => Set<WorkOrderAudit>();
+    public DbSet<OrderCreationReceipt> CreationReceipts => Set<OrderCreationReceipt>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,6 +52,40 @@ public sealed class TenantDbContext(DbContextOptions<TenantDbContext> options, T
         orders.HasOne<Membership>().WithMany().HasForeignKey(x => new { x.TenantId, x.CustomerUserId }).OnDelete(DeleteBehavior.Restrict);
         orders.HasOne<Membership>().WithMany().HasForeignKey(x => new { x.TenantId, x.ProviderUserId }).OnDelete(DeleteBehavior.Restrict);
         orders.HasIndex(x => new { x.TenantId, x.CreatedAt, x.Id }).IsDescending(false, true, true);
+        ConfigureCommandHistory(modelBuilder);
+    }
+
+    private void ConfigureCommandHistory(ModelBuilder modelBuilder)
+    {
+        var audit = modelBuilder.Entity<WorkOrderAudit>();
+        audit.ToTable("work_order_audit", table => table.HasCheckConstraint("ck_order_audit_action", "action = 'work-order.requested'"));
+        audit.HasKey(x => new { x.TenantId, x.Id });
+        audit.Property(x => x.TenantId).HasColumnName("tenant_id").ValueGeneratedNever();
+        audit.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+        audit.Property(x => x.ActorId).HasColumnName("actor_id");
+        audit.Property(x => x.OrderId).HasColumnName("order_id");
+        audit.Property(x => x.Action).HasColumnName("action").HasMaxLength(64);
+        audit.Property(x => x.OccurredAt).HasColumnName("occurred_at");
+        audit.HasQueryFilter(x => x.TenantId == TenantId);
+        audit.HasOne<Membership>().WithMany().HasForeignKey(x => new { x.TenantId, x.ActorId }).OnDelete(DeleteBehavior.Restrict);
+        audit.HasOne<WorkOrder>().WithMany().HasForeignKey(x => new { x.TenantId, Id = x.OrderId }).OnDelete(DeleteBehavior.Restrict);
+
+        var receipt = modelBuilder.Entity<OrderCreationReceipt>();
+        receipt.ToTable("order_creation_receipts", table =>
+        {
+            table.HasCheckConstraint("ck_creation_key", "key <> '00000000-0000-0000-0000-000000000000'");
+            table.HasCheckConstraint("ck_creation_fingerprint", "fingerprint ~ '^[0-9A-F]{64}$'");
+        });
+        receipt.HasKey(x => new { x.TenantId, x.ActorId, x.Key }).HasName("pk_order_creation_receipts");
+        receipt.Property(x => x.TenantId).HasColumnName("tenant_id").ValueGeneratedNever();
+        receipt.Property(x => x.ActorId).HasColumnName("actor_id").ValueGeneratedNever();
+        receipt.Property(x => x.Key).HasColumnName("key").ValueGeneratedNever();
+        receipt.Property(x => x.Fingerprint).HasColumnName("fingerprint").HasMaxLength(64).UseCollation("C");
+        receipt.Property(x => x.OrderId).HasColumnName("order_id");
+        receipt.Property(x => x.CreatedAt).HasColumnName("created_at");
+        receipt.HasQueryFilter(x => x.TenantId == TenantId);
+        receipt.HasOne<Membership>().WithMany().HasForeignKey(x => new { x.TenantId, x.ActorId }).OnDelete(DeleteBehavior.Restrict);
+        receipt.HasOne<WorkOrder>().WithMany().HasForeignKey(x => new { x.TenantId, Id = x.OrderId }).OnDelete(DeleteBehavior.Restrict);
     }
 
     public async Task<IDbContextTransaction> BeginTenantTransactionAsync(CancellationToken cancellationToken = default)
@@ -88,6 +124,8 @@ public sealed class TenantDbContext(DbContextOptions<TenantDbContext> options, T
         foreach (var entry in ChangeTracker.Entries().Where(x => x.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
         {
             var tenant = entry.Property("TenantId");
+            if (entry.Entity is WorkOrderAudit or OrderCreationReceipt && entry.State != EntityState.Added)
+                throw new InvalidOperationException("Command history is immutable through the application.");
             if (tenant.CurrentValue is not Guid current || current != TenantId ||
                 (entry.State != EntityState.Added && (tenant.OriginalValue is not Guid original || original != TenantId)))
                 throw new InvalidOperationException("Cross-tenant writes are forbidden.");

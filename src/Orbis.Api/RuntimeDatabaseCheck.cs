@@ -60,12 +60,14 @@ public sealed class RuntimeDatabaseCheck(NpgsqlDataSource dataSource, TimeProvid
                 AND NOT EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
                     WHERE n.nspname IN ('public','directory') AND c.relkind='r' AND pg_has_role(r.oid,c.relowner,'USAGE'))
                 AND (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-                    WHERE n.nspname='public' AND c.relname IN ('memberships','work_orders')
-                        AND c.relrowsecurity AND c.relforcerowsecurity)=2
+                    WHERE n.nspname='public' AND c.relname IN ('memberships','work_orders','work_order_audit','order_creation_receipts')
+                        AND c.relrowsecurity AND c.relforcerowsecurity)=4
                 AND NOT has_schema_privilege(current_user, 'public', 'CREATE')
                 AND NOT has_schema_privilege(current_user, 'directory', 'CREATE')
                 AND NOT has_table_privilege(current_user, 'work_orders', 'TRUNCATE')
                 AND NOT has_table_privilege(current_user, 'memberships', 'INSERT,UPDATE,DELETE,TRUNCATE')
+                AND NOT has_table_privilege(current_user, 'work_order_audit', 'UPDATE,DELETE,TRUNCATE')
+                AND NOT has_table_privilege(current_user, 'order_creation_receipts', 'UPDATE,DELETE,TRUNCATE')
                 AND NOT has_table_privilege(current_user, 'directory.tenants', 'INSERT,UPDATE,DELETE,TRUNCATE')
                 AND NOT has_table_privilege(current_user, 'directory.tenant_domains', 'INSERT,UPDATE,DELETE,TRUNCATE')
                 AND NOT has_table_privilege(current_user, 'directory.users', 'INSERT,UPDATE,DELETE,TRUNCATE')

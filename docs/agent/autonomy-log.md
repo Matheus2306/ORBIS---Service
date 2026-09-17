@@ -19,3 +19,7 @@ Problema: ao usar APIs relacionais, build detectou assembly 10.0.4 transitivo ve
 ## AUT-005 — identidade e guard operacional
 
 Problema: RLS no banco não prova autorização HTTP. Implementação: diretório persistido, JWT real, membership por request e autorização de recurso. Revisão independente apontou health anônimo amplificando consultas e falta de verificação de grants de membership. Decisão: health TTL 5s/single-flight/limite 4; startup sempre novo; guard nega mutação de membership. Evidência: 54 testes reais aprovados, incluindo drift/recuperação. Não foi medido ganho de throughput. Intervenção humana: nenhuma decisão técnica exigida.
+
+## AUT-006 — retry sem duplicidade
+
+Problema: POST com resposta perdida ou repetição paralela. Alternativas: memória, lock externo, unicidade PostgreSQL. Decisão: PK tenant/ator/chave, fingerprint v1 e recibo/audit na mesma transação. Ajuste preventivo: timestamp alinhado a microssegundos para primeiro recibo e replay serem idênticos. Evidência: 75 testes aprovados, incluindo 100 comandos concorrentes e falha real do audit; nenhuma medição de capacidade. Intervenção humana: nenhuma.

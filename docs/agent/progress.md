@@ -15,3 +15,7 @@ EF Core e migration inicial, RLS ENABLE/FORCE, filtros, FKs compostas, guards e 
 ## Diretório e leitura autenticada
 
 Identidade global issuer+subject, tenant/domínio verificado, membership fresco e GET com autorização de recurso. JWT real no teste, sem bypass. Upgrade preserva legado suspenso. Revisão independente concluída; guard contra grants excessivos e health com TTL/concorrência limitada. Build e 54/54 testes aprovados; dois modelos EF alinhados; scanners locais sem achados reportados. IdP real, portais, comandos e performance permanecem pendentes.
+
+## Criação idempotente e auditoria
+
+POST com autoridade derivada da sessão, rejeição de campos extras, chave obrigatória e recibo estável. Ordem/recibo/audit atômicos; RLS e append-only no histórico. Cem comandos concorrentes resultaram em uma criação; falha real do audit fez rollback completo. Build e 75/75 testes aprovados, migration alinhada, Gitleaks sem leaks. Sem ganho de performance alegado. Próximo caminho de leitura: lista keyset para depois medir workload representativo.

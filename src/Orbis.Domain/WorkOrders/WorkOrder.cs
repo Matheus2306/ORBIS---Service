@@ -20,6 +20,8 @@ public sealed class WorkOrder
         ArgumentException.ThrowIfNullOrWhiteSpace(description);
         if (description.Length > 2000)
             throw new ArgumentOutOfRangeException(nameof(description));
+        if (description.Contains('\0'))
+            throw new ArgumentException("Description contains an unsupported control character.", nameof(description));
 
         return new WorkOrder
         {

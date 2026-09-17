@@ -1,8 +1,8 @@
 # Próximas ações
 
-1. Entregar criação idempotente com audit na mesma transação; retry paralelo e payload divergente não podem duplicar efeito.
+1. Entregar lista keyset com autorização no SQL, limite/cursor validados e testes contra vazamento/duplicação.
 2. Expor transições de ordens com versão esperada, permissão/recurso, idempotência e audit; testes HTTP de concorrência.
-3. Entregar lista keyset com autorização no SQL, limite/cursor validados e testes contra vazamento/duplicação.
+3. Definir quotas/retenção do histórico e grants operacionais; criação já passou por concorrência/rollback reais.
 4. Gerar Small dataset e medir baseline Release, inclusive gerador/servidor e query plans.
 5. Automatizar gates em CI, grants operacionais e provisionamento controlado; depois integrar IdP e portais.
 

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Orbis.Api;
+using Orbis.Application.Tenancy;
 using Orbis.Application.WorkOrders;
 using Orbis.Infrastructure.Persistence;
 using Orbis.Infrastructure.Queries;
@@ -72,6 +73,9 @@ builder.Services.AddSingleton(services => new DbContextOptionsBuilder<TenantDbCo
 builder.Services.AddScoped<ITenantDirectory, TenantDirectory>();
 builder.Services.AddScoped<IWorkOrderReader, WorkOrderReader>();
 builder.Services.AddScoped<ReadWorkOrder>();
+builder.Services.AddScoped<ResolveTenantUser>();
+builder.Services.AddScoped<CreateWorkOrder>();
+builder.Services.AddScoped<IWorkOrderCreator, WorkOrderCreator>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<RuntimeDatabaseCheck>();
 builder.Services.AddHostedService(services => services.GetRequiredService<RuntimeDatabaseCheck>());
@@ -80,7 +84,7 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     // Limite de proteção por instância, não quota comercial nem proteção DDoS distribuída.
-    options.AddConcurrencyLimiter("database-reads", limiter =>
+    options.AddConcurrencyLimiter("database-operations", limiter =>
     {
         limiter.PermitLimit = 16;
         limiter.QueueLimit = 0;
@@ -105,16 +109,24 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check 
 app.MapGet("/v1/work-orders/{id:guid}", async (Guid id, HttpContext context, ReadWorkOrder query, CancellationToken cancellationToken) =>
 {
     context.Response.Headers.CacheControl = "no-store";
-    var tenantClaims = context.User.FindAll("tenant_id").ToArray();
-    Guid? claimedTenant = null;
-    if (tenantClaims.Length > 1 || (tenantClaims.Length == 1 && !Guid.TryParse(tenantClaims[0].Value, out _)))
-        return Results.NotFound();
-    if (tenantClaims.Length == 1) claimedTenant = Guid.Parse(tenantClaims[0].Value);
-    var order = await query.ExecuteAsync(context.Request.Host.Host,
-        context.User.FindFirst("iss")?.Value ?? string.Empty, context.User.FindFirst("sub")?.Value ?? string.Empty,
-        claimedTenant, id, cancellationToken);
+    if (!TenantHttpRequest.TryRead(context, out var request)) return Results.NotFound();
+    var order = await query.ExecuteAsync(request, id, cancellationToken);
     return order is null ? Results.NotFound() : Results.Ok(order);
-}).RequireRateLimiting("database-reads");
+}).RequireRateLimiting("database-operations");
+app.MapPost("/v1/work-orders", async (RequestOrderBody body, HttpContext context, CreateWorkOrder command, CancellationToken cancellationToken) =>
+{
+    context.Response.Headers.CacheControl = "no-store";
+    if (!TenantHttpRequest.TryRead(context, out var request)) return Results.NotFound();
+    var keys = context.Request.Headers["Idempotency-Key"];
+    if (keys.Count != 1 || !Guid.TryParseExact(keys[0], "D", out var key) || key == Guid.Empty)
+        return Results.Problem(statusCode: 400, title: "A nonempty UUID Idempotency-Key is required.");
+    var result = await command.ExecuteAsync(request, key, body.Description, cancellationToken);
+    if (result.Outcome == CreateOrderOutcome.Denied) return Results.NotFound();
+    if (result.Outcome == CreateOrderOutcome.Invalid) return Results.Problem(statusCode: 400, title: "Description must contain 1 to 2000 characters.");
+    if (result.Outcome == CreateOrderOutcome.Conflict) return Results.Problem(statusCode: 409, title: "Idempotency key was already used with different content.");
+    context.Response.Headers["Idempotency-Replayed"] = result.Outcome == CreateOrderOutcome.Replayed ? "true" : "false";
+    return Results.Created($"/v1/work-orders/{result.Order!.Id}", result.Order);
+}).RequireRateLimiting("database-operations");
 if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();
 app.Run();

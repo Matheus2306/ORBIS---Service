@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Orbis.Application.WorkOrders;
+using Orbis.Application.Tenancy;
 using Orbis.Infrastructure.Persistence;
 
 namespace Orbis.Infrastructure.Queries;
