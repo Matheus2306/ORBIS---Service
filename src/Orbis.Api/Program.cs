@@ -73,6 +73,7 @@ builder.Services.AddSingleton(services => new DbContextOptionsBuilder<TenantDbCo
 builder.Services.AddScoped<ITenantDirectory, TenantDirectory>();
 builder.Services.AddScoped<IWorkOrderReader, WorkOrderReader>();
 builder.Services.AddScoped<ReadWorkOrder>();
+builder.Services.AddScoped<ListWorkOrders>();
 builder.Services.AddScoped<ResolveTenantUser>();
 builder.Services.AddScoped<CreateWorkOrder>();
 builder.Services.AddScoped<IWorkOrderCreator, WorkOrderCreator>();
@@ -126,6 +127,15 @@ app.MapPost("/v1/work-orders", async (RequestOrderBody body, HttpContext context
     if (result.Outcome == CreateOrderOutcome.Conflict) return Results.Problem(statusCode: 409, title: "Idempotency key was already used with different content.");
     context.Response.Headers["Idempotency-Replayed"] = result.Outcome == CreateOrderOutcome.Replayed ? "true" : "false";
     return Results.Created($"/v1/work-orders/{result.Order!.Id}", result.Order);
+}).RequireRateLimiting("database-operations");
+app.MapGet("/v1/work-orders", async (int? limit, string? cursor, HttpContext context, ListWorkOrders query, CancellationToken cancellationToken) =>
+{
+    context.Response.Headers.CacheControl = "no-store";
+    if (!TenantHttpRequest.TryRead(context, out var request)) return Results.NotFound();
+    var result = await query.ExecuteAsync(request, limit ?? 25, cursor, cancellationToken);
+    if (result.Outcome == ListOrdersOutcome.Denied) return Results.NotFound();
+    if (result.Outcome == ListOrdersOutcome.Invalid) return Results.Problem(statusCode: 400, title: "Invalid page limit or cursor.");
+    return Results.Ok(result.Page);
 }).RequireRateLimiting("database-operations");
 if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();

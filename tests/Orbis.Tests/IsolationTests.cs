@@ -16,7 +16,7 @@ public sealed class IsolationTests
         var member = new Membership(tenantA, user, Permission.ReadAllOrders | Permission.ManageOrders | Permission.AssignOrders);
         var provider = new Membership(tenantA, Guid.NewGuid(), Permission.ExecuteAssignedOrders);
         var order = WorkOrder.Request(tenantB, user, "Tenant B confidential", DateTimeOffset.UnixEpoch);
-        Assert.False(WorkOrderAccess.CanRead(member, order));
+        Assert.False(WorkOrderAccess.ReadFilter(member).Compile()(order));
         Assert.False(WorkOrderAccess.CanCancel(member, order));
         Assert.False(WorkOrderAccess.CanAssign(member, order, provider));
     }
@@ -28,11 +28,11 @@ public sealed class IsolationTests
         var member = new Membership(tenant, Guid.NewGuid(), Permission.ReadOwnOrders | Permission.CancelOwnOrders);
         var own = WorkOrder.Request(tenant, member.UserId, "Own", DateTimeOffset.UnixEpoch);
         var other = WorkOrder.Request(tenant, Guid.NewGuid(), "Other", DateTimeOffset.UnixEpoch);
-        Assert.True(WorkOrderAccess.CanRead(member, own));
-        Assert.False(WorkOrderAccess.CanRead(member, other));
+        Assert.True(WorkOrderAccess.ReadFilter(member).Compile()(own));
+        Assert.False(WorkOrderAccess.ReadFilter(member).Compile()(other));
         Assert.False(WorkOrderAccess.CanCancel(member, other));
         member.Suspend();
-        Assert.False(WorkOrderAccess.CanRead(member, own));
+        Assert.False(WorkOrderAccess.ReadFilter(member).Compile()(own));
     }
 
     [Fact]

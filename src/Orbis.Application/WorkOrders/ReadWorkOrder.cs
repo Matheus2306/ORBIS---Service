@@ -7,6 +7,7 @@ public sealed record OrderDetails(Guid Id, string Description, string Status, lo
 public interface IWorkOrderReader
 {
     Task<OrderDetails?> FindAsync(TenantUser user, Guid orderId, CancellationToken cancellationToken);
+    Task<OrderBatch?> ListAsync(TenantUser user, int limit, OrderPosition? position, CancellationToken cancellationToken);
 }
 
 public sealed class ReadWorkOrder(ResolveTenantUser resolver, IWorkOrderReader orders)

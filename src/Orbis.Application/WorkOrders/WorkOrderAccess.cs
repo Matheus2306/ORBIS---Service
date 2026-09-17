@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Orbis.Domain.Identity;
 using Orbis.Domain.WorkOrders;
 
@@ -5,11 +6,14 @@ namespace Orbis.Application.WorkOrders;
 
 public static class WorkOrderAccess
 {
-    public static bool CanRead(Membership membership, WorkOrder order) =>
-        SameTenant(membership, order) &&
-        (membership.Allows(Permission.ReadAllOrders) ||
-         (membership.Allows(Permission.ReadOwnOrders) && order.CustomerUserId == membership.UserId) ||
-         (membership.Allows(Permission.ExecuteAssignedOrders) && order.ProviderUserId == membership.UserId));
+    public static Expression<Func<WorkOrder, bool>> ReadFilter(Membership membership)
+    {
+        var all = membership.Allows(Permission.ReadAllOrders);
+        var own = membership.Allows(Permission.ReadOwnOrders);
+        var assigned = membership.Allows(Permission.ExecuteAssignedOrders);
+        return order => order.TenantId == membership.TenantId &&
+            (all || (own && order.CustomerUserId == membership.UserId) || (assigned && order.ProviderUserId == membership.UserId));
+    }
 
     public static bool CanAssign(Membership membership, WorkOrder order, Membership provider) =>
         SameTenant(membership, order) && membership.Allows(Permission.AssignOrders) &&

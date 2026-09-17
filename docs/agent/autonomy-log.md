@@ -23,3 +23,7 @@ Problema: RLS no banco não prova autorização HTTP. Implementação: diretóri
 ## AUT-006 — retry sem duplicidade
 
 Problema: POST com resposta perdida ou repetição paralela. Alternativas: memória, lock externo, unicidade PostgreSQL. Decisão: PK tenant/ator/chave, fingerprint v1 e recibo/audit na mesma transação. Ajuste preventivo: timestamp alinhado a microssegundos para primeiro recibo e replay serem idênticos. Evidência: 75 testes aprovados, incluindo 100 comandos concorrentes e falha real do audit; nenhuma medição de capacidade. Intervenção humana: nenhuma.
+
+## AUT-007 — navegação limitada com política única
+
+Problema: lista precisa limitar transferência e manter autorização por recurso. Decisão: keyset por created_at/id, máximo 100 e ReadFilter compartilhado entre detalhe/lista no SQL. Experimento: empate de timestamps, inserção entre páginas e cursor de outro escopo; 86 testes aprovados. Nenhum índice novo ou ganho de throughput alegado antes do baseline. Intervenção humana: nenhuma.

@@ -19,3 +19,7 @@ Identidade global issuer+subject, tenant/domínio verificado, membership fresco 
 ## Criação idempotente e auditoria
 
 POST com autoridade derivada da sessão, rejeição de campos extras, chave obrigatória e recibo estável. Ordem/recibo/audit atômicos; RLS e append-only no histórico. Cem comandos concorrentes resultaram em uma criação; falha real do audit fez rollback completo. Build e 75/75 testes aprovados, migration alinhada, Gitleaks sem leaks. Sem ganho de performance alegado. Próximo caminho de leitura: lista keyset para depois medir workload representativo.
+
+## Listagem com posição e autorização no SQL
+
+GET de lista limitado a 100 itens com cursor v1 vinculado ao tenant/ator, seek por timestamp/ID e regra de leitura compartilhada com detalhe. Sem count global ou autorização pós-paginação. Build e 86/86 testes aprovados, incluindo empates, inserção entre páginas, cursor adversarial e acesso de prestador. Nenhum novo índice/cache; medição em volume ainda pendente.

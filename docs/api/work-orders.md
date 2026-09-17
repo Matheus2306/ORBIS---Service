@@ -1,6 +1,6 @@
 # API de ordens — contrato implementado
 
-`GET /v1/work-orders/{id:guid}` exige access token JWT e Host de domínio verificado no diretório. Resposta 200: id, description, status (nome textual do estado), version, createdAt UTC. `Cache-Control: no-store`. Nenhum dado de outro usuário/tenant integra o DTO. Lista e transições ainda não estão expostas.
+`GET /v1/work-orders/{id:guid}` exige access token JWT e Host de domínio verificado no diretório. Resposta 200: id, description, status (nome textual do estado), version, createdAt UTC. `Cache-Control: no-store`. Nenhum dado de outro usuário/tenant integra o DTO. Transições ainda não estão expostas.
 
 401: token ausente/inválido, assinatura/tipo/issuer/audience/lifetime incorretos; WWW-Authenticate Bearer sem detalhes internos. 403: principal autenticado não cumpre policy de claims. 404 uniforme: recurso ausente, host não registrado/não verificado, tenant/usuário/membership inativo, vínculo ou permissão insuficiente, tenant_id assinado divergente/inválido. 429: 16 operações simultâneas por instância, compartilhadas entre GET/POST, sem fila. 503: indisponibilidade/timeout PostgreSQL direto; erro inesperado de persistência retorna 500. Erros usam Problem Details com traceId; não retornam SQL/credenciais. Nenhuma promessa de ausência de side-channel temporal foi medida.
 
@@ -24,3 +24,9 @@ Runtime lê directory e memberships e pode SELECT/INSERT/UPDATE work_orders. Aud
 201 com `{ id, createdAt }`, Location relativa e `Idempotency-Replayed: false`. Repetir a mesma chave/ator/tenant com a mesma descrição normalizada retorna o mesmo recibo 201 e header true; conteúdo diferente retorna 409. Replay também revalida autorização. Id/data originais são estáveis, independentemente de alterações posteriores da ordem; consulte GET para estado atual. Um timeout não permite inferir ausência de commit: repetir com a MESMA chave. Nova chave significa nova intenção de criação.
 
 Ordem, recibo e audit transacionam juntos; falha de qualquer escrita desfaz o conjunto. Recibos não expiram automaticamente nesta versão. Retenção/limpeza/quotas antes de produção conforme ADR-011. Não há cobrança, evento externo ou broker no comando.
+
+## Listar ordens
+
+`GET /v1/work-orders?limit=25&cursor=...`. Limit opcional, 1–100; cursor opcional e opaco. Resposta 200 `{ items: [...], nextCursor: "..." }`; nextCursor null indica fim. Ordem fixa createdAt DESC/id DESC; sem count global, offset ou número de página. Retorna somente recursos autorizados no instante da consulta. Membership sem permissão retorna 404; vínculo autorizado sem ordens recebe lista vazia. Mesma regra de leitura aplicada ao detalhe e à lista antes de materializar dados.
+
+Cursor inválido/maior que 512 caracteres/versão não suportada →400; cursor emitido para outro tenant/ator →404. Editar o cursor não concede autoridade: autenticação, membership, filtro de recurso e RLS são aplicados novamente. Não há assinatura nem segredo no cursor. Novo item anterior à posição atual aparece somente em uma nova navegação; não há snapshot entre páginas. Permissões revogadas são respeitadas na próxima requisição. Filtros/sorts adicionais ainda não fazem parte do contrato.
