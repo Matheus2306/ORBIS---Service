@@ -18,4 +18,14 @@ Comece por [estado do agente](docs/agent/agent-state.md), [próximas ações](do
 
 SDK fixado em `global.json`. Development, Testing, Performance, Staging e Production são ambientes distintos. Não reutilizar dados pessoais ou credenciais entre eles. A pasta `.artifacts` contém somente artefatos locais ignorados pelo Git.
 
-Comandos de build, testes e operação são adicionados com seus respectivos executáveis; consulte [validação](docs/testing/test-strategy.md). Nenhum serviço foi publicado.
+```powershell
+dotnet restore --locked-mode
+dotnet tool restore
+dotnet format --verify-no-changes --no-restore
+dotnet build -c Release --no-restore -warnaserror
+./scripts/test-postgres.ps1
+```
+
+O script exige PowerShell 7 e PostgreSQL 18, aceita `-PgBin` e `-Port`, cria cluster local exclusivo com SCRAM e credenciais aleatórias, executa todos os testes e encerra o servidor. Não usa bases existentes. Sem PostgreSQL, `dotnet test tests/Orbis.Tests -c Release` executa apenas domínio/arquitetura; isso não substitui integração. Não executar `dotnet test` da solução sem as conexões de teste: a suíte falha intencionalmente quando faltam.
+
+A API atual expõe somente `/health/live`, `/health/ready` (503 até integração de dependências) e OpenAPI em Development. Nenhum serviço foi publicado. Consulte [evidência de isolamento](docs/testing/reports/2026-09-17-tenant-foundation.md).

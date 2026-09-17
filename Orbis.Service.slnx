@@ -6,6 +6,7 @@
     <Project Path="src/Orbis.Infrastructure/Orbis.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Orbis.IntegrationTests/Orbis.IntegrationTests.csproj" />
     <Project Path="tests/Orbis.Tests/Orbis.Tests.csproj" />
   </Folder>
 </Solution>

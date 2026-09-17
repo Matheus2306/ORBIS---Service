@@ -1,0 +1,8 @@
+title = "ORBIS source secret scanning"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated local artifacts excluded from version control; source and tests remain scanned."
+paths = ['''(^|[\\/])(\.git|\.artifacts|bin|obj)([\\/]|$)''']
