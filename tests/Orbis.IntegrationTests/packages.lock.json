@@ -511,6 +511,12 @@
           "Orbis.Domain": "[1.0.0, )"
         }
       },
+      "orbis.datagenerator": {
+        "type": "Project",
+        "dependencies": {
+          "Orbis.Infrastructure": "[1.0.0, )"
+        }
+      },
       "orbis.domain": {
         "type": "Project"
       },

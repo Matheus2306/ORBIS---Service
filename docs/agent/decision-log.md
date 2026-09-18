@@ -13,3 +13,4 @@
 | 2026-09-17 | Idempotência por unicidade/transação PostgreSQL | ADR-011; 100 concorrentes, um efeito; sem lock distribuído ou broker |
 | 2026-09-17 | Keyset e filtro de autorização compartilhado no SQL | ADR-012; integridade de navegação testada; query plans/ganho de performance não medidos |
 | 2026-09-18 | Transições com versão esperada e recibo por ação | ADR-011 estendida; ator/permissão revalidados no replay; 98 testes aprovados |
+| 2026-09-18 | Gerador separado, COPY streaming e manifesto do conteúdo | Small reproduzido em duas bases/perfil; transação exclusiva só no preparo; nenhuma alteração no runtime para facilitar carga |

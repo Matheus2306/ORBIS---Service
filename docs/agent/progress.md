@@ -27,3 +27,7 @@ GET de lista limitado a 100 itens com cursor v1 vinculado ao tenant/ator, seek p
 ## 2026-09-18 — transições e retomada
 
 Retomado código de transições deixado antes da interrupção; sessão antiga de build não existia mais e o build foi refeito. Migration com RLS e audit versionado, backfill de registro anterior, cinco endpoints com autorização/versão/idempotência. Jornada HTTP completa e 100 conclusões concorrentes testadas; falha do audit preservou estado anterior. Build e 98/98 testes aprovados, scanners locais e modelo EF sem achados reportados. Próximo incremento: dados representativos e medição, sem classificar o núcleo como produto pronto.
+
+## 2026-09-18 — dataset reproduzível
+
+Gerador isolado da API com UUIDs/datas estáveis, perfis uniforme/hot tenant, usuários multi-membership, histórico e recibos. COPY streaming com checks/FKs; destino local vazio obrigatório, transação exclusiva e hashes do conteúdo persistido. CLI gera manifesto em cluster descartável. Build e 108 testes aprovados; reprodução byte a byte dos hashes em bases independentes, rollback e RLS/replay verificados. Small disponível; capacidade da API ainda não medida. Extraído ciclo de vida PostgreSQL e arquivo de grants para reuso, sem infraestrutura nova.

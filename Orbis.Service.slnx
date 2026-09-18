@@ -9,4 +9,7 @@
     <Project Path="tests/Orbis.IntegrationTests/Orbis.IntegrationTests.csproj" />
     <Project Path="tests/Orbis.Tests/Orbis.Tests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Orbis.DataGenerator/Orbis.DataGenerator.csproj" />
+  </Folder>
 </Solution>

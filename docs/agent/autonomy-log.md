@@ -31,3 +31,7 @@ Problema: lista precisa limitar transferência e manter autorização por recurs
 ## AUT-008 — transição única com recuperação do retry
 
 Problema: aceite/conclusão simultâneos e resposta perdida. Decisão: versão otimista + recibo tenant/ator/ação/chave + audit da versão resultante, transacionados juntos. Conflito permite uma releitura para distinguir replay de comando divergente; timeout não sofre retry cego. Nova atribuição exige conta global ativa do prestador. Evidência: 98 testes, duas disputas de 100 conclusões com efeito único e rollback real de audit. Intervenção humana: usuário retomou a sessão; nenhuma decisão técnica dependia de permissão.
+
+## AUT-009 — volume reproduzível antes da medição
+
+Problema: consultas ainda só haviam sido verificadas em fixtures funcionais pequenos. Alternativas: dados manuais, entidades EF rastreadas, COPY streaming em ferramenta isolada. Decisão: receita determinística e COPY, sem dependência adicional nem alteração das fábricas de domínio. Evidência: 108 testes; hashes iguais em duas bases de cada perfil Small, recibos compatíveis com os comandos reais, RLS e rollback. Scripts de cluster e grants compartilhados evitam divergência entre testes e medições futuras. Medium/Large ainda não executados; nenhum ganho de capacidade alegado. Intervenção humana: nenhuma.

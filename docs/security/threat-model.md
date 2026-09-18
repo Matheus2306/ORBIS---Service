@@ -1,5 +1,9 @@
 # Threat model — ORBIS SERVICE
 
+## Fronteira da ferramenta de dados sintéticos (2026-09-18)
+
+`tools/Orbis.DataGenerator` não integra o binário/runtime da API. Usa credencial privilegiada exclusivamente para preparo de cluster descartável: Host 127.0.0.1, servidor loopback, banco orbis_test_/orbis_perf_, ausência de tabelas desconhecidas e de dados de negócio. Guardrails não transformam um prefixo em autorização para dados reais. Revalidação sob locks, importação/verificação atômicas, nenhum DELETE/TRUNCATE/DROP. COPY não testa a política RLS; replay e leitura posteriores são testados com runtime restrito. Contratos/permissões da API não foram relaxados. Falha ao publicar manifesto pode exigir novo cluster; ferramenta não faz resume/overwrite. Logs locais podem conter dados sintéticos rejeitados por constraints; não compartilhar artefatos sem revisão.
+
 ## Overview
 
 Modelo atualizado em 2026-09-18 após transições. Fontes: código e testes reais; revisão independente cobriu o incremento anterior de diretório/GET, com reconciliação posterior de readiness/grants. Criação/lista/transições foram revisadas sequencialmente pelo autor, sem alegar nova auditoria independente. A API valida JWT e expõe ciclo de ordens com audit; IdP operacional, portais, arquivos, jobs e implantação ainda não existem. Cenários de ameaça não são findings.

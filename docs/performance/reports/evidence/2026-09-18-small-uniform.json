@@ -1,0 +1,312 @@
+{
+  "GeneratorVersion": "1",
+  "Recipe": {
+    "Level": "Small",
+    "Profile": "Uniform",
+    "Seed": 42,
+    "TenantCount": 50,
+    "UserCount": 1000,
+    "OrderCount": 10000,
+    "UsersPerTenant": 20,
+    "ProviderCount": 4,
+    "CustomerCount": 15,
+    "ConfigurationHash": "DE38D40F8A47DEB87F15DEEB9FD375B7E62835A3C53291490B2924D85AF682ED"
+  },
+  "PostgreSqlVersion": "18.6",
+  "DirectoryMigrations": [
+    "20260917162648_InitialDirectory"
+  ],
+  "TenantMigrations": [
+    "20260917130050_InitialTenantBoundary",
+    "20260917162654_LinkDirectory",
+    "20260917171204_AtomicOrderCreation",
+    "20260918112051_AtomicOrderTransitions"
+  ],
+  "HashFormat": "SHA256/ordered-PostgreSQL-binary-COPY/v1",
+  "Tables": [
+    {
+      "Table": "directory.tenants",
+      "Rows": 50,
+      "TotalBytes": 24576,
+      "ContentSha256": "D230082437D265C3ED986AD4D5966F90E451C44112C72E4E2C117C5568C1B4C6"
+    },
+    {
+      "Table": "directory.tenant_domains",
+      "Rows": 50,
+      "TotalBytes": 40960,
+      "ContentSha256": "C5A9A26477E5F834D1B4E77DF632D097CF343779FB58A261EC01B3BA4BF4BF99"
+    },
+    {
+      "Table": "directory.users",
+      "Rows": 1000,
+      "TotalBytes": 139264,
+      "ContentSha256": "1351B202E1270A84505E6D47E2B751B718E47A977054E87EE7E1EFF2BBF673BC"
+    },
+    {
+      "Table": "directory.external_identities",
+      "Rows": 1000,
+      "TotalBytes": 368640,
+      "ContentSha256": "9D08A1B76EF53F9A214C08B1D0580AE9B24A2452221FB920B94DF80E15F14B49"
+    },
+    {
+      "Table": "public.memberships",
+      "Rows": 1050,
+      "TotalBytes": 245760,
+      "ContentSha256": "913B675B5A1DA682968B2E8F079B47B4D3C2F595696979471B9A22B122EF069D"
+    },
+    {
+      "Table": "public.work_orders",
+      "Rows": 10000,
+      "TotalBytes": 5177344,
+      "ContentSha256": "A62932648287834B16F747A57A7E50DC776E2082165D043BB2A245DED7A40E4D"
+    },
+    {
+      "Table": "public.work_order_audit",
+      "Rows": 22500,
+      "TotalBytes": 5906432,
+      "ContentSha256": "A5ABDB4A1A77EDA59E3E3AA63989159F4145BBBE46B60EF6D50F84017100AD68"
+    },
+    {
+      "Table": "public.order_creation_receipts",
+      "Rows": 10000,
+      "TotalBytes": 3547136,
+      "ContentSha256": "AEB6F0AEBE5158AB90853371DA19C3E724CDFB6F2B91C4CDB5158DBBB740EF8C"
+    },
+    {
+      "Table": "public.order_transition_receipts",
+      "Rows": 12500,
+      "TotalBytes": 4825088,
+      "ContentSha256": "6FA10237AD89DFAEF95093429FDE300FC464861F2163F3D2BAF87E1FDD714756"
+    }
+  ],
+  "Tenants": [
+    {
+      "TenantId": "0f91481e-b230-8b64-ab61-93dd608d5492",
+      "Orders": 200
+    },
+    {
+      "TenantId": "117ff25c-a1f9-8492-ac5f-1a4a8a4f48e0",
+      "Orders": 200
+    },
+    {
+      "TenantId": "1254c4ca-6b33-855c-b732-3aae6b09d672",
+      "Orders": 200
+    },
+    {
+      "TenantId": "12ac15df-299d-8278-a295-be21cbaa9bea",
+      "Orders": 200
+    },
+    {
+      "TenantId": "1514ba0b-d9c2-8903-bdbb-cc1e46064932",
+      "Orders": 200
+    },
+    {
+      "TenantId": "157fd700-4f47-8d6a-911b-1619f92302d0",
+      "Orders": 200
+    },
+    {
+      "TenantId": "2415abde-3e74-8f8a-865d-6a3a33ac8095",
+      "Orders": 200
+    },
+    {
+      "TenantId": "276ba309-fe65-868e-a7b7-183ae465cfac",
+      "Orders": 200
+    },
+    {
+      "TenantId": "2920096b-b1b4-87a8-a4a7-11551aba86ff",
+      "Orders": 200
+    },
+    {
+      "TenantId": "2e39bdcb-8f7d-8e92-bb85-9a0bda45a20b",
+      "Orders": 200
+    },
+    {
+      "TenantId": "2f69597f-2293-863c-8586-f1e3ba91c461",
+      "Orders": 200
+    },
+    {
+      "TenantId": "3730ea80-46cf-8b12-9e0b-fc66399ed00b",
+      "Orders": 200
+    },
+    {
+      "TenantId": "3ed2c2f4-59fc-8af5-bd14-471c0d034d74",
+      "Orders": 200
+    },
+    {
+      "TenantId": "497832a2-ceb2-809b-9d8c-254444c0963e",
+      "Orders": 200
+    },
+    {
+      "TenantId": "50dec025-c5e9-8fd8-b052-6125d96e9e25",
+      "Orders": 200
+    },
+    {
+      "TenantId": "52f69aae-2f44-8561-86c9-d8f57a7f80c3",
+      "Orders": 200
+    },
+    {
+      "TenantId": "54af9bcb-4921-8ffe-b35c-e6486703c8ad",
+      "Orders": 200
+    },
+    {
+      "TenantId": "56491872-c8db-861c-8950-a1747b221ddf",
+      "Orders": 200
+    },
+    {
+      "TenantId": "5ada21e2-4d99-8892-9191-25c36bebbb28",
+      "Orders": 200
+    },
+    {
+      "TenantId": "62b4dca5-8160-87ad-8543-a3037632e866",
+      "Orders": 200
+    },
+    {
+      "TenantId": "649b04f4-229b-814c-a00d-6358fbe0b707",
+      "Orders": 200
+    },
+    {
+      "TenantId": "653312ed-59e0-871c-ac19-c0e10be549cc",
+      "Orders": 200
+    },
+    {
+      "TenantId": "6805205c-9bc9-8c7d-8c41-7d62f9331fb4",
+      "Orders": 200
+    },
+    {
+      "TenantId": "70700603-9a35-899b-bf22-cd0f237cf8bb",
+      "Orders": 200
+    },
+    {
+      "TenantId": "715789d8-f6e8-81fd-897e-492b5ef9080d",
+      "Orders": 200
+    },
+    {
+      "TenantId": "736f560e-8604-81a4-9eb5-71533558e8fd",
+      "Orders": 200
+    },
+    {
+      "TenantId": "76c1b86e-52c5-8fc4-9ce2-747bd30559ba",
+      "Orders": 200
+    },
+    {
+      "TenantId": "7f6cda82-7ec5-8aa5-8983-dd6ea566d2b3",
+      "Orders": 200
+    },
+    {
+      "TenantId": "87c45541-921d-8482-bad9-794bf525a43e",
+      "Orders": 200
+    },
+    {
+      "TenantId": "91e304ef-4375-8d2b-9021-7507e268b076",
+      "Orders": 200
+    },
+    {
+      "TenantId": "9414ea7a-b354-8860-90ab-696a6368c8c9",
+      "Orders": 200
+    },
+    {
+      "TenantId": "9f2d66c9-613a-85ce-9ec9-fcfec1b9fed7",
+      "Orders": 200
+    },
+    {
+      "TenantId": "a0604c62-7c78-85b4-9148-d5e551ed765f",
+      "Orders": 200
+    },
+    {
+      "TenantId": "a52b0191-d848-8102-8cdb-ba4c689547a4",
+      "Orders": 200
+    },
+    {
+      "TenantId": "b34b4037-1b09-82f8-b794-8fad871e379e",
+      "Orders": 200
+    },
+    {
+      "TenantId": "b8a96a3f-160c-8e08-861e-77774b1b07b7",
+      "Orders": 200
+    },
+    {
+      "TenantId": "bb80441e-cdac-8cef-8281-a907039bd545",
+      "Orders": 200
+    },
+    {
+      "TenantId": "bcfaf3c7-f86f-824f-823c-a47ebc105de4",
+      "Orders": 200
+    },
+    {
+      "TenantId": "c26d0d13-e7c0-81d0-adb0-1bf576e7b369",
+      "Orders": 200
+    },
+    {
+      "TenantId": "c2c8d2cf-2da2-8ce5-a85b-80200a403b07",
+      "Orders": 200
+    },
+    {
+      "TenantId": "c3d57dc6-553e-8490-a885-698023c0f341",
+      "Orders": 200
+    },
+    {
+      "TenantId": "c441cab1-1b3a-8547-a24e-157502c1c4b2",
+      "Orders": 200
+    },
+    {
+      "TenantId": "cec39309-6e2b-871a-8166-2ca0ec410d3a",
+      "Orders": 200
+    },
+    {
+      "TenantId": "d87d12e9-3bae-847e-9c64-5ce0baa3c7d4",
+      "Orders": 200
+    },
+    {
+      "TenantId": "e1454f68-3e6a-8548-91ec-15bb7f8ab730",
+      "Orders": 200
+    },
+    {
+      "TenantId": "e992b686-e7b7-8fd9-8adb-28afce9d5492",
+      "Orders": 200
+    },
+    {
+      "TenantId": "f36c569a-65c0-8af3-b830-11c47b1f0c4b",
+      "Orders": 200
+    },
+    {
+      "TenantId": "f44d4b3e-b8a6-81f2-9433-b7dad2e2f29c",
+      "Orders": 200
+    },
+    {
+      "TenantId": "f4d080f9-4503-88c4-abd5-28c24cff84d8",
+      "Orders": 200
+    },
+    {
+      "TenantId": "fc4bfdbe-5dff-8434-8ef4-b418ff6ac243",
+      "Orders": 200
+    }
+  ],
+  "Statuses": [
+    {
+      "Status": 0,
+      "Orders": 5000
+    },
+    {
+      "Status": 1,
+      "Orders": 1000
+    },
+    {
+      "Status": 2,
+      "Orders": 1000
+    },
+    {
+      "Status": 3,
+      "Orders": 1000
+    },
+    {
+      "Status": 4,
+      "Orders": 1500
+    },
+    {
+      "Status": 5,
+      "Orders": 500
+    }
+  ],
+  "GeneratedAtUtc": "2026-09-18T11:51:20.8328429+00:00",
+  "ImportAndVerificationSeconds": 22.3794975
+}
