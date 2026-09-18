@@ -6,7 +6,8 @@
 | Runtime ASP.NET | 10.0.10 | `dotnet --info` |
 | PostgreSQL | 18.6 | binário local `postgres --version` |
 | Build Release | 0 warnings, 0 errors | .NET build da solução |
-| Testes | 108/108 aprovados; 0 ignorados | docs/testing/reports/2026-09-18-synthetic-dataset.md |
+| Testes | 114/114 aprovados; 0 ignorados | docs/testing/reports/2026-09-18-database-tls.md |
+| Transporte PostgreSQL | TLS obrigatório + VerifyFull; plaintext/CA alheia/nome errado negados | DatabaseTransportTests; sem medição de overhead |
 | Dataset persistido | Small, 1.000 usuários / 50 tenants / 10.000 ordens, Uniform e HotTenant | manifesto; hashes iguais em bancos independentes, sem validação de carga |
 | Planos SQL | 16 consultas × 30 amostras × 2 perfis, RLS ativa | docs/performance/reports/2026-09-18-small-query-plans.md; não mede HTTP/RPS |
 | Concorrência funcional | 100 versões originais, 1 efeito confirmado | teste PostgreSQL; não é medição de RPS |

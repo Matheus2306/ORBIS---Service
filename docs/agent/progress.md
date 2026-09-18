@@ -35,3 +35,7 @@ Gerador isolado da API com UUIDs/datas estáveis, perfis uniforme/hot tenant, us
 ## 2026-09-18 — SQL observado antes de otimizar
 
 Capturados 16 planos dos leitores EF reais e alternativa offset, role runtime/RLS, Small uniforme/concentrado, 30 amostras cada. Keyset profundo do despachante usa índice temporal e 26 linhas; offset concentrado varre/ordena 3.000. Cliente/prestador usam FK + sort: hipótese para volume maior, sem novo índice agora. Build/108 testes/scanners aprovados; artefatos e limites registrados. Revisão automática chegou a impedir uma execução por créditos ausentes; após retomada autorizou testes e coleta. Nenhum RPS/SLO HTTP ou 1M validado.
+
+## 2026-09-18 — transporte do banco para Performance
+
+Cluster local agora exige TLS e SCRAM, com CA efêmera fornecida explicitamente aos clientes e sem confiança global. Chave do servidor em pasta protegida; CA privada não persistida. Build/114 testes aprovados, inclusive rejeição de plaintext/CA alheia/hostname incorreto e gate VerifyFull em Performance. Apenas Windows validado. Preservados números históricos de planos; nenhuma comparação de overhead ou capacidade inferida. Próximo: Kestrel/HTTPS e telemetria para carga HTTP real.

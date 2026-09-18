@@ -39,3 +39,7 @@ Problema: consultas ainda só haviam sido verificadas em fixtures funcionais peq
 ## AUT-010 — planos reais e limites da inferência
 
 Problema: faltava evidência do caminho de paginação no PostgreSQL. Experimento: interceptar SQL/params dos leitores EF, preservar runtime/RLS e comparar páginas equivalentes com offset. Medição: 960 EXPLAINs medidos, dois perfis; no tenant com 3.000 ordens o keyset profundo leu 26 linhas, enquanto offset varreu 3.000. Decisão: manter índice temporal; não adicionar índices por ator ou cache sem carga representativa. Trinta amostras seriais/instrumentadas não provam p99 de API nem throughput. Intervenção humana: retomada após revisão automática indisponível por créditos; fluxo de aprovação respeitado.
+
+## AUT-011 — aproximar transporte antes da carga
+
+Problema: a API Performance já exigia VerifyFull, mas o cluster local anterior não fornecia TLS. Alternativas: reduzir validação (rejeitada), provisionar certificado público (sem necessidade local), CA efêmera explícita. Decisão: criptografia .NET nativa, SAN IP, hostssl obrigatório e pasta TLS com ACL restrita. Evidência: 114 testes, conexões negativas rejeitadas e API Performance funcional com VerifyFull; sem dependência nova, trust store ou benchmark inventado. Intervenção humana: nenhuma.

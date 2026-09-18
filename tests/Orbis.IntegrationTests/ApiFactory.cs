@@ -12,7 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Orbis.IntegrationTests;
 
-public sealed class ApiFactory(DatabaseFixture database) : WebApplicationFactory<Program>
+public sealed class ApiFactory(DatabaseFixture database, string environment = "Testing") : WebApplicationFactory<Program>
 {
     public const string Issuer = "https://identity.orbis.test";
     public const string Audience = "orbis-api-tests";
@@ -21,7 +21,7 @@ public sealed class ApiFactory(DatabaseFixture database) : WebApplicationFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Testing");
+        builder.UseEnvironment(environment);
         builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["Authentication:Authority"] = Issuer,

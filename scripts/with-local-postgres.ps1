@@ -17,6 +17,8 @@ $databaseName = $(if ($Purpose -eq 'Performance') { 'orbis_perf_' } else { 'orbi
 $adminPassword = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 $runtimePassword = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 $previousPassword = $env:PGPASSWORD
+$previousSslMode = $env:PGSSLMODE
+$previousSslRoot = $env:PGSSLROOTCERT
 $previousAdmin = $env:ORBIS_TEST_ADMIN_CONNECTION
 $previousRuntime = $env:ORBIS_TEST_RUNTIME_CONNECTION
 $previousDataset = $env:ORBIS_DATASET_CONNECTION
@@ -30,6 +32,20 @@ try {
     & $initDb -D $dataPath --username=postgres --auth=scram-sha-256 --pwfile=$passwordPath --encoding=UTF8 --locale=C
     if ($LASTEXITCODE -ne 0) { throw 'Failed to initialize the isolated PostgreSQL cluster.' }
     Remove-Item -LiteralPath $passwordPath
+    $tls = & (Join-Path $PSScriptRoot 'new-local-test-certificate.ps1') -Directory (Join-Path $runRoot 'tls')
+    $certificatePath = $tls.Certificate.Replace('\', '/').Replace("'", "''")
+    $keyPath = $tls.Key.Replace('\', '/').Replace("'", "''")
+    Add-Content -LiteralPath (Join-Path $dataPath 'postgresql.conf') -Value @"
+ssl = on
+ssl_min_protocol_version = 'TLSv1.2'
+ssl_cert_file = '$certificatePath'
+ssl_key_file = '$keyPath'
+"@
+    # ssl=on sozinho ainda permite plaintext; a regra de acesso precisa recusá-lo explicitamente.
+    Set-Content -LiteralPath (Join-Path $dataPath 'pg_hba.conf') -Value @"
+hostssl all all 127.0.0.1/32 scram-sha-256
+hostnossl all all 127.0.0.1/32 reject
+"@
     $serverOptions = "-h 127.0.0.1 -p $Port -c max_connections=40 -c shared_buffers=64MB"
     if ($IsWindows) {
         # Start-Process -Wait aguarda a árvore inteira, incluindo o servidor que deve continuar vivo.
@@ -43,12 +59,16 @@ try {
     }
     $started = $true
     $env:PGPASSWORD = $adminPassword
+    $env:PGSSLMODE = 'verify-full'
+    $env:PGSSLROOTCERT = $tls.Root
     # O cluster acaba de ser criado; nenhuma base pré-existente é alvo deste script.
     "CREATE ROLE orbis_runtime LOGIN PASSWORD '$runtimePassword' NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE; CREATE DATABASE $databaseName;" |
         & $psql --no-psqlrc --host=127.0.0.1 --port=$Port --username=postgres --dbname=postgres --set=ON_ERROR_STOP=1 --quiet
     if ($LASTEXITCODE -ne 0) { throw 'Test database provisioning failed.' }
-    $env:ORBIS_TEST_ADMIN_CONNECTION = "Host=127.0.0.1;Port=$Port;Database=$databaseName;Username=postgres;Password=$adminPassword;Maximum Pool Size=5;Timeout=5;Command Timeout=10"
-    $env:ORBIS_TEST_RUNTIME_CONNECTION = "Host=127.0.0.1;Port=$Port;Database=$databaseName;Username=orbis_runtime;Password=$runtimePassword;Maximum Pool Size=12;Timeout=5;Command Timeout=10"
+    $rootOption = $tls.Root.Replace('"', '""')
+    $transport = "SSL Mode=VerifyFull;Root Certificate=`"$rootOption`""
+    $env:ORBIS_TEST_ADMIN_CONNECTION = "Host=127.0.0.1;Port=$Port;Database=$databaseName;Username=postgres;Password=$adminPassword;Maximum Pool Size=5;Timeout=5;Command Timeout=10;$transport"
+    $env:ORBIS_TEST_RUNTIME_CONNECTION = "Host=127.0.0.1;Port=$Port;Database=$databaseName;Username=orbis_runtime;Password=$runtimePassword;Maximum Pool Size=12;Timeout=5;Command Timeout=10;$transport"
     $env:ORBIS_DATASET_CONNECTION = $env:ORBIS_TEST_ADMIN_CONNECTION
     Push-Location $projectRoot
     try {
@@ -58,6 +78,8 @@ try {
     } finally { Pop-Location }
 } finally {
     $env:PGPASSWORD = $previousPassword
+    $env:PGSSLMODE = $previousSslMode
+    $env:PGSSLROOTCERT = $previousSslRoot
     $env:ORBIS_TEST_ADMIN_CONNECTION = $previousAdmin
     $env:ORBIS_TEST_RUNTIME_CONNECTION = $previousRuntime
     $env:ORBIS_DATASET_CONNECTION = $previousDataset
