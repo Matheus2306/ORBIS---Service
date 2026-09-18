@@ -11,6 +11,7 @@ using Npgsql;
 using Orbis.Api;
 using Orbis.Application.Tenancy;
 using Orbis.Application.WorkOrders;
+using Orbis.Domain.WorkOrders;
 using Orbis.Infrastructure.Persistence;
 using Orbis.Infrastructure.Queries;
 
@@ -77,6 +78,8 @@ builder.Services.AddScoped<ListWorkOrders>();
 builder.Services.AddScoped<ResolveTenantUser>();
 builder.Services.AddScoped<CreateWorkOrder>();
 builder.Services.AddScoped<IWorkOrderCreator, WorkOrderCreator>();
+builder.Services.AddScoped<TransitionWorkOrder>();
+builder.Services.AddScoped<IWorkOrderTransitions, WorkOrderTransitions>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<RuntimeDatabaseCheck>();
 builder.Services.AddHostedService(services => services.GetRequiredService<RuntimeDatabaseCheck>());
@@ -118,8 +121,7 @@ app.MapPost("/v1/work-orders", async (RequestOrderBody body, HttpContext context
 {
     context.Response.Headers.CacheControl = "no-store";
     if (!TenantHttpRequest.TryRead(context, out var request)) return Results.NotFound();
-    var keys = context.Request.Headers["Idempotency-Key"];
-    if (keys.Count != 1 || !Guid.TryParseExact(keys[0], "D", out var key) || key == Guid.Empty)
+    if (!TenantHttpRequest.TryReadIdempotencyKey(context, out var key))
         return Results.Problem(statusCode: 400, title: "A nonempty UUID Idempotency-Key is required.");
     var result = await command.ExecuteAsync(request, key, body.Description, cancellationToken);
     if (result.Outcome == CreateOrderOutcome.Denied) return Results.NotFound();
@@ -139,6 +141,24 @@ app.MapGet("/v1/work-orders", async (int? limit, string? cursor, HttpContext con
 }).RequireRateLimiting("database-operations");
 if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();
+foreach (var (path, action) in new[] { ("assign", WorkOrderAction.Assign), ("accept", WorkOrderAction.Accept),
+    ("start", WorkOrderAction.Start), ("complete", WorkOrderAction.Complete), ("cancel", WorkOrderAction.Cancel) })
+{
+    app.MapPost($"/v1/work-orders/{{id:guid}}/{path}", async (Guid id, TransitionOrderBody body, HttpContext context,
+        TransitionWorkOrder command, CancellationToken cancellationToken) =>
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        if (!TenantHttpRequest.TryRead(context, out var request)) return Results.NotFound();
+        if (!TenantHttpRequest.TryReadIdempotencyKey(context, out var key))
+            return Results.Problem(statusCode: 400, title: "A nonempty UUID Idempotency-Key is required.");
+        var result = await command.ExecuteAsync(request, new(id, action, body.ExpectedVersion, key, body.ProviderUserId), cancellationToken);
+        if (result.Outcome == TransitionOrderOutcome.Denied) return Results.NotFound();
+        if (result.Outcome == TransitionOrderOutcome.Invalid) return Results.Problem(statusCode: 400, title: "Invalid transition request.");
+        if (result.Outcome == TransitionOrderOutcome.Conflict) return Results.Problem(statusCode: 409, title: "Order version, state or idempotency key conflicts with this request.");
+        context.Response.Headers["Idempotency-Replayed"] = result.Outcome == TransitionOrderOutcome.Replayed ? "true" : "false";
+        return Results.Ok(result.Order);
+    }).RequireRateLimiting("database-operations");
+}
 app.Run();
 
 public partial class Program;

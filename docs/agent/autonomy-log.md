@@ -27,3 +27,7 @@ Problema: POST com resposta perdida ou repetição paralela. Alternativas: memó
 ## AUT-007 — navegação limitada com política única
 
 Problema: lista precisa limitar transferência e manter autorização por recurso. Decisão: keyset por created_at/id, máximo 100 e ReadFilter compartilhado entre detalhe/lista no SQL. Experimento: empate de timestamps, inserção entre páginas e cursor de outro escopo; 86 testes aprovados. Nenhum índice novo ou ganho de throughput alegado antes do baseline. Intervenção humana: nenhuma.
+
+## AUT-008 — transição única com recuperação do retry
+
+Problema: aceite/conclusão simultâneos e resposta perdida. Decisão: versão otimista + recibo tenant/ator/ação/chave + audit da versão resultante, transacionados juntos. Conflito permite uma releitura para distinguir replay de comando divergente; timeout não sofre retry cego. Nova atribuição exige conta global ativa do prestador. Evidência: 98 testes, duas disputas de 100 conclusões com efeito único e rollback real de audit. Intervenção humana: usuário retomou a sessão; nenhuma decisão técnica dependia de permissão.

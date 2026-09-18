@@ -23,6 +23,7 @@ public sealed class DatabaseFixture : IAsyncLifetime
     public Guid MultiTenantUser { get; } = Guid.NewGuid();
     public Guid LegacyTenant { get; } = Guid.NewGuid();
     public Guid LegacyUser { get; } = Guid.NewGuid();
+    public Guid LegacyAuditId { get; } = Guid.NewGuid();
     public string HostA => $"a-{TenantA:N}.orbis.test";
     public string HostB => $"b-{TenantB:N}.orbis.test";
     public string UnverifiedHost => $"unverified-{TenantA:N}.orbis.test";
@@ -40,9 +41,15 @@ public sealed class DatabaseFixture : IAsyncLifetime
         await using var admin = CreateContext(TenantA, admin: true);
         // Exercita a evolução de uma versão já populada, sem resetar nem apagar o legado.
         await admin.GetService<IMigrator>().MigrateAsync("20260917130050_InitialTenantBoundary");
-        await SeedAsync(LegacyTenant, LegacyUser);
+        var legacyOrder = await SeedAsync(LegacyTenant, LegacyUser);
         await using var directory = CreateDirectoryContext(admin: true);
         await directory.Database.MigrateAsync();
+        await admin.GetService<IMigrator>().MigrateAsync("20260917171204_AtomicOrderCreation");
+        // Popula o formato de audit anterior antes de testar a expansão com order_version.
+        await admin.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO work_order_audit (tenant_id,id,actor_id,order_id,action,occurred_at)
+            VALUES ({LegacyTenant},{LegacyAuditId},{LegacyUser},{legacyOrder},'work-order.requested',{DateTimeOffset.UnixEpoch})
+            """);
         await admin.Database.MigrateAsync();
         // Esta credencial privilegiada existe apenas no fixture; a API não recebe acesso DDL.
         await admin.Database.ExecuteSqlRawAsync("""
@@ -50,7 +57,7 @@ public sealed class DatabaseFixture : IAsyncLifetime
             GRANT USAGE ON SCHEMA public TO orbis_runtime;
             GRANT SELECT ON memberships TO orbis_runtime;
             GRANT SELECT, INSERT, UPDATE ON work_orders TO orbis_runtime;
-            GRANT SELECT, INSERT ON work_order_audit, order_creation_receipts TO orbis_runtime;
+            GRANT SELECT, INSERT ON work_order_audit, order_creation_receipts, order_transition_receipts TO orbis_runtime;
             REVOKE ALL ON SCHEMA directory FROM PUBLIC;
             GRANT USAGE ON SCHEMA directory TO orbis_runtime;
             GRANT SELECT ON directory.tenants, directory.tenant_domains, directory.users, directory.external_identities TO orbis_runtime;

@@ -1,6 +1,6 @@
 # API de ordens — contrato implementado
 
-`GET /v1/work-orders/{id:guid}` exige access token JWT e Host de domínio verificado no diretório. Resposta 200: id, description, status (nome textual do estado), version, createdAt UTC. `Cache-Control: no-store`. Nenhum dado de outro usuário/tenant integra o DTO. Transições ainda não estão expostas.
+`GET /v1/work-orders/{id:guid}` exige access token JWT e Host de domínio verificado no diretório. Resposta 200: id, description, status (nome textual do estado), version, createdAt UTC. `Cache-Control: no-store`. Nenhum dado de outro usuário/tenant integra o DTO.
 
 401: token ausente/inválido, assinatura/tipo/issuer/audience/lifetime incorretos; WWW-Authenticate Bearer sem detalhes internos. 403: principal autenticado não cumpre policy de claims. 404 uniforme: recurso ausente, host não registrado/não verificado, tenant/usuário/membership inativo, vínculo ou permissão insuficiente, tenant_id assinado divergente/inválido. 429: 16 operações simultâneas por instância, compartilhadas entre GET/POST, sem fila. 503: indisponibilidade/timeout PostgreSQL direto; erro inesperado de persistência retorna 500. Erros usam Problem Details com traceId; não retornam SQL/credenciais. Nenhuma promessa de ausência de side-channel temporal foi medida.
 
@@ -30,3 +30,19 @@ Ordem, recibo e audit transacionam juntos; falha de qualquer escrita desfaz o co
 `GET /v1/work-orders?limit=25&cursor=...`. Limit opcional, 1–100; cursor opcional e opaco. Resposta 200 `{ items: [...], nextCursor: "..." }`; nextCursor null indica fim. Ordem fixa createdAt DESC/id DESC; sem count global, offset ou número de página. Retorna somente recursos autorizados no instante da consulta. Membership sem permissão retorna 404; vínculo autorizado sem ordens recebe lista vazia. Mesma regra de leitura aplicada ao detalhe e à lista antes de materializar dados.
 
 Cursor inválido/maior que 512 caracteres/versão não suportada →400; cursor emitido para outro tenant/ator →404. Editar o cursor não concede autoridade: autenticação, membership, filtro de recurso e RLS são aplicados novamente. Não há assinatura nem segredo no cursor. Novo item anterior à posição atual aparece somente em uma nova navegação; não há snapshot entre páginas. Permissões revogadas são respeitadas na próxima requisição. Filtros/sorts adicionais ainda não fazem parte do contrato.
+
+## Atribuir e executar
+
+POST `/v1/work-orders/{id}/{action}` com `Idempotency-Key` obrigatório e JSON `{ "expectedVersion": 1 }`. Ação assign acrescenta `providerUserId` UUID não vazio; esse campo deve estar ausente/null nas outras ações. Campos desconhecidos são rejeitados. Chave é isolada por tenant/ator/ação; a versão esperada pertence ao fingerprint e não deve mudar em um retry.
+
+| action | Transição permitida | Autorização |
+|---|---|---|
+| assign | Requested → Assigned | AssignOrders; prestador do mesmo tenant, membership ExecuteAssignedOrders e conta global ativos |
+| accept | Assigned → Accepted | prestador atribuído, ExecuteAssignedOrders |
+| start | Accepted → InProgress | prestador atribuído, ExecuteAssignedOrders |
+| complete | InProgress → Completed | prestador atribuído, ExecuteAssignedOrders |
+| cancel | Requested/Assigned/Accepted → Cancelled | ManageOrders ou cliente proprietário com CancelOwnOrders |
+
+200 retorna `{ id, status, version }` do efeito confirmado e `Idempotency-Replayed`. Versão aumenta uma vez por efeito. Replay autorizado retorna o mesmo recibo, inclusive depois de transições posteriores; consultar GET para estado atual. Versão desatualizada, transição inválida ou chave com conteúdo divergente →409. Recurso/prestador/permissão fora do escopo →404. Entrada inválida →400. Trabalho iniciado exige outro fluxo de interrupção, ainda não implementado; cancel nesse estado retorna conflito.
+
+Atualização da ordem, recibo e audit (ator/ação/versão/data) são atômicos. Disputa idempotente ou de versão permite uma releitura limitada após rollback; falhas arbitrárias não são repetidas automaticamente. Suspensão/revogação são rechecadas no request seguinte e no replay; requests já autorizados podem concluir conforme ADR-004. Limite de 16 operações por instância permanece compartilhado por todos os endpoints de negócio.

@@ -23,3 +23,7 @@ POST com autoridade derivada da sessão, rejeição de campos extras, chave obri
 ## Listagem com posição e autorização no SQL
 
 GET de lista limitado a 100 itens com cursor v1 vinculado ao tenant/ator, seek por timestamp/ID e regra de leitura compartilhada com detalhe. Sem count global ou autorização pós-paginação. Build e 86/86 testes aprovados, incluindo empates, inserção entre páginas, cursor adversarial e acesso de prestador. Nenhum novo índice/cache; medição em volume ainda pendente.
+
+## 2026-09-18 — transições e retomada
+
+Retomado código de transições deixado antes da interrupção; sessão antiga de build não existia mais e o build foi refeito. Migration com RLS e audit versionado, backfill de registro anterior, cinco endpoints com autorização/versão/idempotência. Jornada HTTP completa e 100 conclusões concorrentes testadas; falha do audit preservou estado anterior. Build e 98/98 testes aprovados, scanners locais e modelo EF sem achados reportados. Próximo incremento: dados representativos e medição, sem classificar o núcleo como produto pronto.

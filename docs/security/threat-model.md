@@ -2,7 +2,7 @@
 
 ## Overview
 
-Modelo atualizado em 2026-09-17 após listagem keyset. Fontes: código e testes reais; revisão independente cobriu o incremento anterior de diretório/GET, com reconciliação posterior de readiness/grants. POST/lista foram revisados sequencialmente pelo autor, sem alegar nova auditoria independente. A API valida JWT, expõe detalhe/lista e cria ordem com audit; IdP operacional, portais, transições HTTP, arquivos, jobs e implantação ainda não existem. Cenários de ameaça não são findings.
+Modelo atualizado em 2026-09-18 após transições. Fontes: código e testes reais; revisão independente cobriu o incremento anterior de diretório/GET, com reconciliação posterior de readiness/grants. Criação/lista/transições foram revisadas sequencialmente pelo autor, sem alegar nova auditoria independente. A API valida JWT e expõe ciclo de ordens com audit; IdP operacional, portais, arquivos, jobs e implantação ainda não existem. Cenários de ameaça não são findings.
 
 Fluxo implementado: HTTP → validação JWT → host normalizado → domínio verificado/tenant ativo/identidade global ativa → transação tenant-scoped → membership ativo/permissão/recurso → resposta. O ingress e IdP operacional permanecem pendentes. Worker/storage/exports são condicionais às features futuras.
 
@@ -52,6 +52,8 @@ Questões resolvidas: runtime sem owner/superuser/BYPASSRLS; ignorar filtro EF n
 Todos os cenários são hipóteses para implementação/revisão, não vulnerabilidades confirmadas.
 
 Lista implementada: `src/Orbis.Api/Program.cs:131` → `ListWorkOrders` valida limit/cursor/escopo → `src/Orbis.Infrastructure/Queries/WorkOrderReader.cs:23` consulta membership e aplica `src/Orbis.Application/WorkOrders/WorkOrderAccess.cs:9` no SQL antes do seek/Take(limit+1). O mesmo ReadFilter substitui o antigo CanRead pós-materialização no detalhe. Cursor não é assinado nem autoridade; forjá-lo não retira os filtros atuais. Limite 100 e cursor 512 chars contêm transferência/entrada, mas não provam custo de varredura nem proteção contra noisy neighbor. Evidência funcional: OrderListingTests; relatório de 86 testes. Referências de linhas acima descrevem os incrementos correspondentes; esta seção registra a extração da regra de leitura.
+
+Transições: `src/Orbis.Api/Program.cs:144` registra cinco POSTs com o mesmo limiter de banco e DTO fechado. `src/Orbis.Application/WorkOrders/TransitionWorkOrder.cs:20` valida versão/chave/ação/prestador e resolve identidade. `src/Orbis.Infrastructure/Queries/WorkOrderTransitions.cs:12` inicia contexto/transação tenant, lê membership/recurso e exige permissão/designação antes do recibo; atribuição cruza conta global ativa do prestador em SQL parametrizado. Versão otimista, recibo e audit gravados em `:65`; conflito admite releitura limitada após rollback. Não há retry de timeout arbitrário. Novo recibo tem RLS/append-only, incluído no guard; audit guarda versão/ator/ação, sem texto da solicitação. Arquivos/filas não participam desse efeito local. Evidência: relatório de 98 testes, com RLS, replay revogado, concorrência e erro real de audit. Faltam interrupção de rede durante commit, carga, testes de chaos completos e política de retenção. As hipóteses da tabela relativas a futuros comandos agora possuem esta evidência para as cinco transições implementadas.
 
 ## Severity Calibration (Critical, High, Medium, Low)
 

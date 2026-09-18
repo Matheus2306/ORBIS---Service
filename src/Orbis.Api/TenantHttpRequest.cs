@@ -6,6 +6,13 @@ namespace Orbis.Api;
 
 public static class TenantHttpRequest
 {
+    public static bool TryReadIdempotencyKey(HttpContext context, out Guid key)
+    {
+        key = Guid.Empty;
+        var values = context.Request.Headers["Idempotency-Key"];
+        return values.Count == 1 && Guid.TryParseExact(values[0], "D", out key) && key != Guid.Empty;
+    }
+
     public static bool TryRead(HttpContext context, [NotNullWhen(true)] out TenantRequest? request)
     {
         request = null;
@@ -22,3 +29,6 @@ public static class TenantHttpRequest
 // Campos de autoridade adicionais são rejeitados, inclusive TenantId/CustomerId/Status no payload.
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record RequestOrderBody(string? Description);
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record TransitionOrderBody(long ExpectedVersion, Guid? ProviderUserId = null);

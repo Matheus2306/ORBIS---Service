@@ -12,3 +12,4 @@
 | 2026-09-17 | Readiness com TTL 5s e execução única | Contém amplificação de probe; não é cache de autorização nem evidência de throughput |
 | 2026-09-17 | Idempotência por unicidade/transação PostgreSQL | ADR-011; 100 concorrentes, um efeito; sem lock distribuído ou broker |
 | 2026-09-17 | Keyset e filtro de autorização compartilhado no SQL | ADR-012; integridade de navegação testada; query plans/ganho de performance não medidos |
+| 2026-09-18 | Transições com versão esperada e recibo por ação | ADR-011 estendida; ator/permissão revalidados no replay; 98 testes aprovados |
