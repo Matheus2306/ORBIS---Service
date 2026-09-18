@@ -529,6 +529,12 @@
           "Orbis.Application": "[1.0.0, )"
         }
       },
+      "orbis.queryprobe": {
+        "type": "Project",
+        "dependencies": {
+          "Orbis.DataGenerator": "[1.0.0, )"
+        }
+      },
       "Microsoft.AspNetCore.Authentication.JwtBearer": {
         "type": "CentralTransitive",
         "requested": "[10.0.12, )",

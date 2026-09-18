@@ -7,6 +7,7 @@
     <ProjectReference Include="../../src/Orbis.Infrastructure/Orbis.Infrastructure.csproj" />
     <ProjectReference Include="../../src/Orbis.Api/Orbis.Api.csproj" />
     <ProjectReference Include="../../tools/Orbis.DataGenerator/Orbis.DataGenerator.csproj" />
+    <ProjectReference Include="../../tools/Orbis.QueryProbe/Orbis.QueryProbe.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />

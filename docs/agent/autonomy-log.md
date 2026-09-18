@@ -35,3 +35,7 @@ Problema: aceite/conclusão simultâneos e resposta perdida. Decisão: versão o
 ## AUT-009 — volume reproduzível antes da medição
 
 Problema: consultas ainda só haviam sido verificadas em fixtures funcionais pequenos. Alternativas: dados manuais, entidades EF rastreadas, COPY streaming em ferramenta isolada. Decisão: receita determinística e COPY, sem dependência adicional nem alteração das fábricas de domínio. Evidência: 108 testes; hashes iguais em duas bases de cada perfil Small, recibos compatíveis com os comandos reais, RLS e rollback. Scripts de cluster e grants compartilhados evitam divergência entre testes e medições futuras. Medium/Large ainda não executados; nenhum ganho de capacidade alegado. Intervenção humana: nenhuma.
+
+## AUT-010 — planos reais e limites da inferência
+
+Problema: faltava evidência do caminho de paginação no PostgreSQL. Experimento: interceptar SQL/params dos leitores EF, preservar runtime/RLS e comparar páginas equivalentes com offset. Medição: 960 EXPLAINs medidos, dois perfis; no tenant com 3.000 ordens o keyset profundo leu 26 linhas, enquanto offset varreu 3.000. Decisão: manter índice temporal; não adicionar índices por ator ou cache sem carga representativa. Trinta amostras seriais/instrumentadas não provam p99 de API nem throughput. Intervenção humana: retomada após revisão automática indisponível por créditos; fluxo de aprovação respeitado.

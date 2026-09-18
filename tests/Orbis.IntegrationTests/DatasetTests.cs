@@ -7,6 +7,7 @@ using Orbis.DataGenerator;
 using Orbis.Domain.WorkOrders;
 using Orbis.Infrastructure.Persistence;
 using Orbis.Infrastructure.Queries;
+using Orbis.QueryProbe;
 
 namespace Orbis.IntegrationTests;
 
@@ -130,6 +131,15 @@ public sealed class DatasetTests
         Assert.Equal(recipe.OrdersForTenant(1), await context.WorkOrders.IgnoreQueryFilters().CountAsync());
         Assert.Null(await context.WorkOrders.IgnoreQueryFilters().SingleOrDefaultAsync(o => o.Id == order.Id));
         Assert.Null(await context.OrderAudit.IgnoreQueryFilters().FirstOrDefaultAsync(o => o.OrderId == order.Id));
+        await transaction.RollbackAsync();
+        // Executa apenas duas amostras na suíte: verifica segurança/equivalência, não desempenho.
+        var plans = await QueryPlanProbe.CaptureAsync(runtime, recipe, 2);
+        Assert.Equal("orbis_runtime", plans.CurrentRole);
+        Assert.True(plans.RowSecurityActive);
+        Assert.Equal(recipe.OrdersForTenant(0) * 4 / 5, plans.DeepOffset);
+        Assert.Equal(16, plans.Queries.Length);
+        Assert.All(plans.Queries, q => { Assert.Equal(2, q.Samples.Length); Assert.True(q.P99Ms >= q.P50Ms); });
+        await Assert.ThrowsAsync<InvalidOperationException>(() => QueryPlanProbe.CaptureAsync(admin, recipe, 2));
     }
 
     private static async Task<string> NewDatabaseAsync()

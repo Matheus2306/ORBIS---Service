@@ -31,3 +31,7 @@ Retomado código de transições deixado antes da interrupção; sessão antiga 
 ## 2026-09-18 — dataset reproduzível
 
 Gerador isolado da API com UUIDs/datas estáveis, perfis uniforme/hot tenant, usuários multi-membership, histórico e recibos. COPY streaming com checks/FKs; destino local vazio obrigatório, transação exclusiva e hashes do conteúdo persistido. CLI gera manifesto em cluster descartável. Build e 108 testes aprovados; reprodução byte a byte dos hashes em bases independentes, rollback e RLS/replay verificados. Small disponível; capacidade da API ainda não medida. Extraído ciclo de vida PostgreSQL e arquivo de grants para reuso, sem infraestrutura nova.
+
+## 2026-09-18 — SQL observado antes de otimizar
+
+Capturados 16 planos dos leitores EF reais e alternativa offset, role runtime/RLS, Small uniforme/concentrado, 30 amostras cada. Keyset profundo do despachante usa índice temporal e 26 linhas; offset concentrado varre/ordena 3.000. Cliente/prestador usam FK + sort: hipótese para volume maior, sem novo índice agora. Build/108 testes/scanners aprovados; artefatos e limites registrados. Revisão automática chegou a impedir uma execução por créditos ausentes; após retomada autorizou testes e coleta. Nenhum RPS/SLO HTTP ou 1M validado.

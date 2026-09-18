@@ -1,8 +1,8 @@
 # Próximas ações
 
-1. Obter query plans de detalhe/lista antes de escolher índices adicionais; comparar keyset e offset em consultas equivalentes sobre Small.
-2. Investigar planos de escrita e custos de transação/índices com medição apropriada; não converter duração de importação em throughput da aplicação.
-3. Escolher/configurar gerador de carga e medir baseline Release com autenticação, isolamento e métricas do gerador/servidor; separar limitações locais.
+1. Preparar harness HTTP com Kestrel real, ambiente Performance e TLS PostgreSQL validado; preservar JWT, RLS e limites. Confirmar ferramenta/telemetria antes de executar carga.
+2. Medir baseline Release (warmup + ≥5 min) com autenticação, mix de negócio, isolamento e métricas do gerador/servidor; separar limitações locais. k6 é candidato; nada instalado ainda.
+3. Investigar planos de escrita e custos de transação/índices se o baseline mostrar gargalo; não converter tempos SQL isolados em capacidade de API.
 4. Automatizar gates em CI e grants operacionais; manter artefatos imutáveis e scans fail-closed.
 5. Definir quotas/retenção, integração IdP e portais; evolução de carga depende de evidência anterior.
 
