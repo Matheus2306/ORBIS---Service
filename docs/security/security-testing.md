@@ -7,3 +7,5 @@ CI precisa de: analyzers/SAST; auditoria transitiva NuGet com falha se feed indi
 Exercitar replay/idempotência, payload extra, spoof de Host/forwarded headers, token inválido/expirado/issuer/audience, membro suspenso, alteração de permissão, rate abuse, query bound e falha de banco. UI: XSS/CSRF/redirects/session fixation assim que existir. Anexos: path traversal, MIME divergente, malware controlado, signed URL expirada/tenant errado. Cache/busca/SignalR: não aplicável até componente existir.
 
 Registrar commit, ferramenta/versão, configuração sanitizada, cobertura, exclusões justificadas, resultados e correções. Críticos bloqueiam release. Não afirmar segurança concluída por compilar ou por um conjunto de testes negativos.
+
+O [gate local](../testing/local-validation.md) já reúne checks reais com manifesto: auditoria NuGet JSON interpretada, Gitleaks fixado, testes e alinhamento de migrations. Ausência de ferramenta, diagnóstico do scanner e evidência incompleta são falhas. Não substitui SAST especializado, scan de imagem, DAST ou revisão de segurança; esses gates continuam pendentes.

@@ -22,5 +22,7 @@ Fluxo exigido: problema → evidência → alternativas → experimento → medi
 | Terraform/OpenTofu | Reprodução de infraestrutura | Escolher depois do provedor; não criar IaC fictícia |
 | k6 | Testes HTTP com arrival rate e distribuição | Candidato; observar gerador e validar thresholds |
 | BenchmarkDotNet | Microgargalo de CPU ainda não existe | Reservado a código onde profiling justificar |
+| System.Diagnostics.Metrics | Provar sinais HTTP/TLS/pool antes de carga | Nativo já disponível; emissão/atributos testados, coletor/backend ainda não adotados |
+| Gitleaks 8.30.1 | Gate de segredos exigido; regex isolada insuficiente | CLI MIT verificado, versão fixada no gate local; sem runtime/serviço novo; ausência falha a validação |
 
 Para cada adoção adicional, ADR deve responder: gargalo, alternativa nativa .NET/PG, custo, falha nova, monitoramento, recuperação, testes/local/produção e remoção. Licenças, dependências transitivas e advisories devem ser registrados ao fixar pacotes. Versões do NuGet consultadas no feed oficial; não usar preview automaticamente.

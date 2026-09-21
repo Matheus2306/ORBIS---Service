@@ -17,6 +17,7 @@
 | Conclusão concorrente | 100 mesmas chaves → 1 efeito/99 replays; 100 chaves distintas → 1 efeito/99 conflitos | OrderTransitionTests; não é benchmark |
 | Secret scanning | sem leaks | Gitleaks 8.30.1, working tree, defaults, redaction |
 | Formatação | aprovada | dotnet format --verify-no-changes |
+| Gate local | 11 checks aprovados, 119 testes + 21 casos das regras; scanner ausente rejeitado | docs/testing/reports/2026-09-21-local-gate.md; CI remoto não executado |
 | Migrations | ambos modelos alinhados; upgrade local populado aprovado | EF CLI + DirectoryMigrationTests |
 | Auditoria NuGet transitiva | sem vulnerabilidades reportadas pelo feed em 2026-09-21 | oito projetos; não equivale a security review |
 | Usuários ativos / RPS / percentis HTTP | não medidos | sem carga HTTP ainda |

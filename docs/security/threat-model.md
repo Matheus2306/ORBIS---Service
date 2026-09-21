@@ -1,5 +1,9 @@
 # Threat model — ORBIS SERVICE
 
+## Fronteira da evidência local (2026-09-21)
+
+`scripts/validate-local.ps1` executa ferramentas locais fixadas e lê seus artefatos. Exit code zero isolado não autoriza aprovação: JSON NuGet precisa cobrir os projetos e não conter diagnósticos/achados; TRX precisa cobrir as assemblies, com todos os resultados aprovados. Snapshot/hashes detectam divergência acidental durante a execução; não são assinatura, sandbox para executável malicioso ou atestado de CI. Operador/host/scanner continuam parte da base de confiança. Logs locais exigem revisão antes de compartilhar. Gate local sempre declara productionApproved=false; um relatório local não autoriza release.
+
 ## Fronteira da ferramenta de dados sintéticos (2026-09-18)
 
 `tools/Orbis.DataGenerator` não integra o binário/runtime da API. Usa credencial privilegiada exclusivamente para preparo de cluster descartável: Host 127.0.0.1, servidor loopback, banco orbis_test_/orbis_perf_, ausência de tabelas desconhecidas e de dados de negócio. Guardrails não transformam um prefixo em autorização para dados reais. Revalidação sob locks, importação/verificação atômicas, nenhum DELETE/TRUNCATE/DROP. COPY não testa a política RLS; replay e leitura posteriores são testados com runtime restrito. Contratos/permissões da API não foram relaxados. Falha ao publicar manifesto pode exigir novo cluster; ferramenta não faz resume/overwrite. Logs locais podem conter dados sintéticos rejeitados por constraints; não compartilhar artefatos sem revisão.

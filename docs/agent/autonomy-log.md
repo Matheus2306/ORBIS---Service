@@ -51,3 +51,7 @@ Problema: quatro testes Kestrel recebiam EOF antes de validar o certificado. Inv
 ## AUT-013 — telemetria sem infraestrutura prematura
 
 Problema: falta provar emissão e controlar atributos antes de coletar carga. Investigação: ASP.NET/Npgsql já fornecem instrumentos; nome padrão de pool deriva da conexão. Decisão: nome fixo e teste MeterListener, sem exporter/backend novo. Evidência: 119 testes, atributos HTTP/DB permitidos, dados exercitados ausentes e conexão liberada após jornada. Metadados internos de host/porta DB continuam restritos à operação. Não foi medida capacidade nem overhead. Intervenção humana: nenhuma.
+
+## AUT-014 — automatizar verificação sem aprovar por omissão
+
+Problema: repetição manual dos checks e scanners que podem retornar zero com achados. Decisão: script único, interpretação JSON/TRX, cobertura de projetos/assemblies, snapshots/hashes e status de engenharia local separado de produção. Experimento: scanner ausente, relatórios sintéticos inválidos e execução completa em cluster novo. Evidência: rejeição não zero do scanner ausente, 21 regras e 119 testes aprovados; 11 checks reais verdes. Intervenção humana: retomada solicitada durante a execução; nenhuma decisão técnica exigiu confirmação.

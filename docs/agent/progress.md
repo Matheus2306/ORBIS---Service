@@ -47,3 +47,7 @@ Retomado diagnóstico de handshake: logs comprovaram rejeição de chave efêmer
 ## 2026-09-21 — verificar sinais sem exportar dados indevidos
 
 Pool da API nomeado orbis-runtime para não usar connection string como atributo. Teste HTTPS coleta instrumentos nativos por instância/pool, verifica rotas/status/durações/ocupação e ausência dos dados sensíveis exercitados. Build, 119 testes, formatação, Gitleaks e consulta NuGet transitiva aprovados. Inventário de observabilidade explicita que coleta externa/recursos/alertas e carga ainda faltam. Inventário local: sem k6, sem distribuição WSL, Java disponível é 8u281/32 bits; não usar esse runtime antigo para novo gerador. Nenhuma ferramenta de carga instalada.
+
+## 2026-09-21 — evidência local reproduzível
+
+Consolidados 11 checks em validate-local.ps1 com manifesto/hashes/estado Git e TRX novos. Auditoria JSON não depende apenas do exit code; pacotes/diagnósticos/incompletude bloqueiam. Testes ignorados, assemblies omitidas e fonte alterada também bloqueiam. Execução final aprovada: 119 testes, 21 regras, migrations alinhadas e scanners sem achados reportados. Scanner ausente foi rejeitado em ensaio separado. F6 segue em curso, sem CI remoto/imagem/perf smoke. Próximo: gerador e host Performance isolados para carga HTTPS.
