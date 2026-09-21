@@ -6,12 +6,12 @@ Data: 2026-09-21. Resultado: **NO-GO**. Núcleo de API testado localmente, sem p
 |---|---|---|
 | Produto/jornadas | desenho inicial | três experiências completas e aceite |
 | Build reproduzível/CI | build local Release aprovado; CI pendente | pipeline verde e artefato imutável |
-| Isolamento/autorização | PostgreSQL, ciclo de ordens, dataset e HTTPS local testados; restante pendente | 118 testes no relatório de Kestrel HTTPS; novos componentes exigem testes próprios |
+| Isolamento/autorização | PostgreSQL, ciclo de ordens, dataset e HTTPS local testados; restante pendente | 119 testes no relatório de métricas nativas; novos componentes exigem testes próprios |
 | Security review | pendente | SAST/SCA/secrets/container/DAST + revisão |
 | Migrations | upgrade local com legado aprovado; escala pendente | N/N+1, locks, dataset representativo |
 | Backup/PITR | ausente | backup criptografado e WAL verificados |
 | Restore | não executado | RPO/RTO medidos e checks de integridade |
-| Observabilidade/alertas | planejado | métricas/traces/logs e alerta recebido |
+| Observabilidade/alertas | emissão de métricas HTTP/TLS/pool testada; coleta e alertas pendentes | backend, recursos, traces e alerta recebido |
 | Load/stress/spike/soak | não executados | relatórios e percentis por endpoint |
 | HA/scaling | não implantado | failover e capacidade pós-perda de instância |
 | Deployment/rollback | não executado | digest, config, IaC e ensaio |

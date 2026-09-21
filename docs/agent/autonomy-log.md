@@ -47,3 +47,7 @@ Problema: a API Performance já exigia VerifyFull, mas o cluster local anterior 
 ## AUT-012 — corrigir a causa do handshake
 
 Problema: quatro testes Kestrel recebiam EOF antes de validar o certificado. Investigação: logs Debug confirmaram Schannel/0x8009030E e chave efêmera não suportada. Decisão: importação PKCS#12 em memória com contêiner temporário do usuário, sem PersistKeySet; buffer zerado e certificado liberado após servidor. Evidência: quatro casos antes falhavam e passaram; suíte completa 118/118, incluindo HTTP/2 e negações TLS. Nenhum teste foi enfraquecido. Intervenção humana: retomada da tarefa, nenhuma decisão técnica exigiu confirmação.
+
+## AUT-013 — telemetria sem infraestrutura prematura
+
+Problema: falta provar emissão e controlar atributos antes de coletar carga. Investigação: ASP.NET/Npgsql já fornecem instrumentos; nome padrão de pool deriva da conexão. Decisão: nome fixo e teste MeterListener, sem exporter/backend novo. Evidência: 119 testes, atributos HTTP/DB permitidos, dados exercitados ausentes e conexão liberada após jornada. Metadados internos de host/porta DB continuam restritos à operação. Não foi medida capacidade nem overhead. Intervenção humana: nenhuma.

@@ -64,7 +64,8 @@ builder.Services.AddSingleton(services =>
     databaseSettings.MaxPoolSize = Math.Min(databaseSettings.MaxPoolSize, 20);
     databaseSettings.Timeout = 5;
     databaseSettings.CommandTimeout = 5;
-    return NpgsqlDataSource.Create(databaseSettings.ConnectionString);
+    // O nome do pool vira atributo de métrica; não publicar a connection string nem criar uma série por tenant.
+    return new NpgsqlDataSourceBuilder(databaseSettings.ConnectionString) { Name = "orbis-runtime" }.Build();
 });
 builder.Services.AddDbContext<DirectoryDbContext>((services, options) =>
     options.UseNpgsql(services.GetRequiredService<NpgsqlDataSource>(), provider =>

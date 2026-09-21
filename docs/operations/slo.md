@@ -8,4 +8,6 @@ Alertas candidatos: burn rate ≥14,4 em 1h+5min, ≥6 em 6h+30min; p99 fora do 
 
 Implementação: logs JSON, trace/correlation ID, ASP.NET/HTTP/runtime/DB metrics; avaliar OpenTelemetry para exportação ao backend escolhido. Labels por rota/status/operação, tenant apenas onde acesso e cardinalidade forem controlados. Health live sem dependências; ready com timeout do banco e schema/serviços necessários, sem detalhes públicos.
 
+O [inventário de observabilidade](observability.md) distingue emissão nativa testada de coleta/alerta ainda pendentes. Pool nomeado e templates de rota têm testes de atributos; isso não prova cumprimento dos SLOs.
+
 RPO≤5 min e RTO≤30 min são objetivos até restore medido. Relatório deve mostrar timestamp de último dado recuperado, início/fim e verificação funcional. SLO não é SLA contratual automaticamente. Nenhuma disponibilidade de produção foi medida.

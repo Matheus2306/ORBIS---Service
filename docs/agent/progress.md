@@ -43,3 +43,7 @@ Cluster local agora exige TLS e SCRAM, com CA efêmera fornecida explicitamente 
 ## 2026-09-21 — HTTPS real antes do benchmark
 
 Retomado diagnóstico de handshake: logs comprovaram rejeição de chave efêmera pelo Schannel. Importação temporária UserKeySet corrigiu o harness sem instalar CA ou relaxar verificações. HTTP/1.1 e HTTP/2 exatos mantêm autenticação, isolamento e replay; raiz alheia/hostname incorreto rejeitados. Build, formatação, Gitleaks e 118 testes aprovados. Nenhum RPS/percentil HTTP medido. Próximo: telemetria nativa com atributos controlados e pool nomeado.
+
+## 2026-09-21 — verificar sinais sem exportar dados indevidos
+
+Pool da API nomeado orbis-runtime para não usar connection string como atributo. Teste HTTPS coleta instrumentos nativos por instância/pool, verifica rotas/status/durações/ocupação e ausência dos dados sensíveis exercitados. Build, 119 testes, formatação, Gitleaks e consulta NuGet transitiva aprovados. Inventário de observabilidade explicita que coleta externa/recursos/alertas e carga ainda faltam. Inventário local: sem k6, sem distribuição WSL, Java disponível é 8u281/32 bits; não usar esse runtime antigo para novo gerador. Nenhuma ferramenta de carga instalada.

@@ -10,4 +10,6 @@ Configuração: fontes externas sobre defaults não secretos. Testing e Developm
 
 Observabilidade: trace ID gerado/validado, logs estruturados com IDs mínimos e acesso restrito; tenant ID não é label de alta cardinalidade em todas as métricas. Audit transacional separado de application logs, append-only para runtime, retenção definida antes da release. Exportações são recursos tenant-scoped com expiração e reautorização no download.
 
+Métricas HTTP/DB usam templates de rota e nome fixo de pool `orbis-runtime`, sem connection string como label. Teste real HTTPS verifica atributos permitidos e ausência de conteúdo/identificadores sensíveis nos casos exercitados. [Limites e coleta pendente](../operations/observability.md); exportadores e traces exigem revisão própria antes de ativar.
+
 Segredos: cofre no destino escolhido, identidades curtas quando possível, rotação ensaiada e logs redigidos. Backups criptografados e acesso segregado. Proteção de dados exige inventário, finalidade, retenção e fluxo de exclusão/portabilidade aprovados antes de produção; nenhuma conformidade legal é afirmada aqui.

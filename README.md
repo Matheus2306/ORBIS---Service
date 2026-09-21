@@ -33,3 +33,5 @@ A API expõe detalhe/lista autenticados, criação idempotente e atribuição/ac
 O [gerador sintético](docs/database/dataset-plan.md) prepara Small com 1.000 usuários, 50 tenants e 10.000 ordens, perfis uniforme/concentrado e manifesto de hashes/contagens reais. Execute `./scripts/generate-dataset.ps1` após build Release. Número de registros não é capacidade de usuários simultâneos; nenhum RPS/p95/p99 da API foi validado.
 
 Os [planos SQL Small](docs/performance/reports/2026-09-18-small-query-plans.md) foram capturados com runtime restrito e RLS, incluindo páginas keyset/offset equivalentes. Reprodução: `./scripts/capture-query-plans.ps1 -Profile HotTenant`. São medições seriais de consultas, não teste de carga da API.
+
+A suíte corrente possui [119 testes aprovados](docs/testing/reports/2026-09-21-native-metrics.md), incluindo atributos de métricas HTTP/TLS/pool sem conteúdo sensível nos casos exercitados. [Observabilidade](docs/operations/observability.md) distingue sinais emitidos de coleta, alertas e operação ainda pendentes.

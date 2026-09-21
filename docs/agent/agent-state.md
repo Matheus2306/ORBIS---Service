@@ -5,19 +5,19 @@
 - Data: 2026-09-21
 - Fase: 0 concluída; F5 em curso, dataset Small reproduzido
 - Branch: main
-- Último commit anterior ao incremento atual: 2af1929; revisão corrente em `git log -1`
+- Último commit anterior ao incremento atual: efe8450; revisão corrente em `git log -1`
 - Build: Release aprovado, 0 warnings/0 errors
-- Testes: 118 aprovados, 0 falhas/ignorados (25 domínio/arquitetura/cursor + 93 PostgreSQL/HTTP/dataset/TLS)
+- Testes: 119 aprovados, 0 falhas/ignorados (25 domínio/arquitetura/cursor + 94 PostgreSQL/HTTP/dataset/TLS/métricas)
 - Performance baseline HTTP: inexistente; planos SQL Small instrumentados em reports/2026-09-18-small-query-plans.md
 - Maior carga validada: nenhuma
 - RPS validado / p95 / p99 / error rate: não medidos
 - Arquitetura: monólito modular; PostgreSQL compartilhado com RLS; ADRs iniciais
 - Tecnologias: .NET SDK 10.0.302; runtime 10.0.10; PostgreSQL local 18.6; Git 2.54.0
 - Tecnologias rejeitadas por ora: Redis, brokers, Kubernetes, microservices, motor de busca externo
-- Tarefa atual: Kestrel HTTPS/HTTP1.1/HTTP2 validado em Performance; próxima telemetria antes da carga
+- Tarefa atual: sinais nativos HTTP/TLS/pool e atributos controlados verificados; coletor externo/carga pendentes
 - Problemas: Docker ausente; acesso de rede do shell exige elevação; infraestrutura de produção não contratada
-- Próxima ação: nome fixo de pool e testes de métricas nativas sem atributos sensíveis
-- Próximas cinco ações: telemetria; gerador de carga HTTPS; baseline de carga; CI reproduzível; quotas/retenção
+- Próxima ação: consolidar gates locais reproduzíveis para testes e scanners antes de ampliar o harness
+- Próximas cinco ações: gate local; gerador de carga HTTPS; telemetria de recursos; baseline de carga; CI remoto
 
 ## Reconstrução de contexto
 

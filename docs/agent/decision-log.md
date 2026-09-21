@@ -17,3 +17,4 @@
 | 2026-09-18 | Preservar índices após sondagem Small | Seek do despachante usa índice temporal; FK/sort de cliente/prestador ainda sem gargalo HTTP comprovado; relatório SQL com 960 amostras |
 | 2026-09-18 | TLS obrigatório também no cluster descartável | Mantém VerifyFull exigido pela API Performance; CA local explícita e testes negativos, sem relaxar validação ou instalar confiança global |
 | 2026-09-21 | Kestrel real/HTTPS com confiança explícita por cliente | Schannel exige chave em contêiner temporário; correção somente no harness, HTTP1.1/2 e rejeições criptográficas comprovados em 118 testes |
+| 2026-09-21 | Métricas nativas e nome fixo de pool | Instrumentação existente atende emissão inicial; 119 testes verificam rotas/status/pool sem atributos sensíveis exercitados; exportador adiado até definir destino |
