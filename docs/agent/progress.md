@@ -39,3 +39,7 @@ Capturados 16 planos dos leitores EF reais e alternativa offset, role runtime/RL
 ## 2026-09-18 — transporte do banco para Performance
 
 Cluster local agora exige TLS e SCRAM, com CA efêmera fornecida explicitamente aos clientes e sem confiança global. Chave do servidor em pasta protegida; CA privada não persistida. Build/114 testes aprovados, inclusive rejeição de plaintext/CA alheia/hostname incorreto e gate VerifyFull em Performance. Apenas Windows validado. Preservados números históricos de planos; nenhuma comparação de overhead ou capacidade inferida. Próximo: Kestrel/HTTPS e telemetria para carga HTTP real.
+
+## 2026-09-21 — HTTPS real antes do benchmark
+
+Retomado diagnóstico de handshake: logs comprovaram rejeição de chave efêmera pelo Schannel. Importação temporária UserKeySet corrigiu o harness sem instalar CA ou relaxar verificações. HTTP/1.1 e HTTP/2 exatos mantêm autenticação, isolamento e replay; raiz alheia/hostname incorreto rejeitados. Build, formatação, Gitleaks e 118 testes aprovados. Nenhum RPS/percentil HTTP medido. Próximo: telemetria nativa com atributos controlados e pool nomeado.

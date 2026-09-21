@@ -43,3 +43,7 @@ Problema: faltava evidência do caminho de paginação no PostgreSQL. Experiment
 ## AUT-011 — aproximar transporte antes da carga
 
 Problema: a API Performance já exigia VerifyFull, mas o cluster local anterior não fornecia TLS. Alternativas: reduzir validação (rejeitada), provisionar certificado público (sem necessidade local), CA efêmera explícita. Decisão: criptografia .NET nativa, SAN IP, hostssl obrigatório e pasta TLS com ACL restrita. Evidência: 114 testes, conexões negativas rejeitadas e API Performance funcional com VerifyFull; sem dependência nova, trust store ou benchmark inventado. Intervenção humana: nenhuma.
+
+## AUT-012 — corrigir a causa do handshake
+
+Problema: quatro testes Kestrel recebiam EOF antes de validar o certificado. Investigação: logs Debug confirmaram Schannel/0x8009030E e chave efêmera não suportada. Decisão: importação PKCS#12 em memória com contêiner temporário do usuário, sem PersistKeySet; buffer zerado e certificado liberado após servidor. Evidência: quatro casos antes falhavam e passaram; suíte completa 118/118, incluindo HTTP/2 e negações TLS. Nenhum teste foi enfraquecido. Intervenção humana: retomada da tarefa, nenhuma decisão técnica exigiu confirmação.

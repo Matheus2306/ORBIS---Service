@@ -38,6 +38,7 @@ try {
     [void]$serverRequest.CertificateExtensions.Add([Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]::new($usage, $true))
     $san = [Security.Cryptography.X509Certificates.SubjectAlternativeNameBuilder]::new()
     $san.AddIpAddress([Net.IPAddress]::Parse('127.0.0.1'))
+    $san.AddDnsName('*.orbis.test')
     [void]$serverRequest.CertificateExtensions.Add($san.Build())
     $serial = [Security.Cryptography.RandomNumberGenerator]::GetBytes(16)
     $serial[0] = 1

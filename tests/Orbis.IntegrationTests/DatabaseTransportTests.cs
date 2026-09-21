@@ -43,7 +43,7 @@ public sealed class DatabaseTransportTests(DatabaseFixture database)
     {
         var settings = new NpgsqlConnectionStringBuilder(database.RuntimeConnection) { Pooling = false };
         if (untrustedRoot) settings.RootCertificate = Path.Combine(Path.GetDirectoryName(settings.RootCertificate!)!, "untrusted-root.crt");
-        else settings.Host = "localhost"; // O certificado de teste declara apenas o SAN IP 127.0.0.1.
+        else settings.Host = "localhost"; // localhost não faz parte dos SANs do certificado de teste.
         await using var connection = new NpgsqlConnection(settings.ConnectionString);
         var error = await Assert.ThrowsAsync<NpgsqlException>(() => connection.OpenAsync());
         Assert.IsType<AuthenticationException>(error.InnerException);
