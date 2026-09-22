@@ -81,6 +81,9 @@ public sealed class OrderListingTests(DatabaseFixture database)
     [InlineData("cursor=invalid!")]
     [InlineData("cursor=bnVsbA")]
     [InlineData("cursor=")]
+    [InlineData("cursor=%20")]
+    [InlineData("limit=1&limit=100")]
+    [InlineData("cursor=&cursor=")]
     public async Task InvalidPageRequestsAreRejected(string query)
     {
         await using var application = new ApiFactory(database);

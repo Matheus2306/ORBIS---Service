@@ -2,6 +2,8 @@
 
 | Data | Decisão | Evidência / consequência |
 |---|---|---|
+| 2026-09-22 | Controllers por capacidade, DTOs separados e policy nomeada | ADR-014; rotas/segurança preservadas, diferenças MVC cobertas por 140 testes; rótulo de métrica documentado |
+| 2026-09-22 | Expansão orientada por capability, não quantidade de rotas | 31 domínios, 111 operações catalogadas/11 implementadas, 46 P0/42 P1 restantes; control plane separado antes de administração |
 | 2026-09-17 | Raiz é diretório atual, inicialmente vazio | Inspeção local; sem trabalho anterior a preservar |
 | 2026-09-17 | Git em main; SDK 10.0.302 | Ferramentas verificadas; versão reproduzível será fixada |
 | 2026-09-17 | PostgreSQL real para integração | Binário 18.6 existente fora do PATH; criar cluster exclusivo local, sem usar serviço ou banco existente |

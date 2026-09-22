@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Orbis.Application.Tenancy;
 
 namespace Orbis.Api;
@@ -25,10 +24,3 @@ public static class TenantHttpRequest
         return true;
     }
 }
-
-// Campos de autoridade adicionais são rejeitados, inclusive TenantId/CustomerId/Status no payload.
-[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-public sealed record RequestOrderBody(string? Description);
-
-[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-public sealed record TransitionOrderBody(long ExpectedVersion, Guid? ProviderUserId = null);

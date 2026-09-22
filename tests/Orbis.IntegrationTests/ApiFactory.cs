@@ -38,7 +38,7 @@ public sealed class ApiFactory(DatabaseFixture database, string environment = "T
     }
 
     public string Token(Guid userId, string? issuer = null, string? audience = null, Guid? tenantId = null,
-        bool expired = false, string type = "at+jwt", bool wrongKey = false)
+        bool expired = false, string type = "at+jwt", bool wrongKey = false, string? omittedClaim = null)
     {
         var now = DateTime.UtcNow;
         var claims = new List<Claim>
@@ -46,6 +46,7 @@ public sealed class ApiFactory(DatabaseFixture database, string environment = "T
             new("sub", userId.ToString()), new("client_id", "integration-tests"), new("jti", Guid.NewGuid().ToString()),
             new("iat", new DateTimeOffset(now).ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture), ClaimValueTypes.Integer64)
         };
+        if (omittedClaim is not null) claims.RemoveAll(claim => claim.Type == omittedClaim);
         if (tenantId.HasValue) claims.Add(new Claim("tenant_id", tenantId.ToString()!));
         using var invalidKey = wrongKey ? RSA.Create(2048) : null;
         var key = new RsaSecurityKey(invalidKey ?? _signingKey) { KeyId = wrongKey ? "unknown" : _keyId };

@@ -24,3 +24,7 @@ Estados: **em curso**, **pendente**, **bloqueado**, **concluído com evidência*
 | S3 | P1 | Large e carga distribuída representativa | Nível 6, 1M na janela definida, relatório auditável | bloqueado: infraestrutura equivalente |
 
 O estado do agente informa o incremento corrente. Não fechar F3 com apenas autenticação falsa de testes nem O2 com apenas existência de script de backup.
+
+## Expansão da API — solicitação de 2026-09-22
+
+Priorizar a [matriz de capabilities](../api/domain-capability-matrix.md) e o [catálogo](../api/endpoint-catalog.md): 111 operações catalogadas, 11 implementadas; 46 P0 e 42 P1 ainda planejadas. Controllers finos, auditoria inicial e gap analysis constituem a preparação; não representam API BASELINE READY. Próximo incremento: contexto atual de identidade/tenant/permissões, depois provisionamento e memberships com fronteira administrativa própria. F5/F6 continuam gates, sem alegação de performance preservada somente pelo build.

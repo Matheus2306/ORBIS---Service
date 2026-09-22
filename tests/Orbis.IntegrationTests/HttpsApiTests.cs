@@ -115,7 +115,8 @@ public sealed class HttpsApiTests(DatabaseFixture database)
         {
             Assert.True(sample.Value > 0);
             Assert.Equal("https", sample.Tags["url.scheme"]);
-            Assert.Contains(sample.Tags["http.route"]?.ToString(), new[] { "/v1/work-orders/{id:guid}", "/v1/work-orders" });
+            // MVC publica templates sem a barra inicial; IDs e query strings continuam proibidos nos atributos.
+            Assert.Contains(sample.Tags["http.route"]?.ToString(), new[] { "v1/work-orders/{id:guid}", "v1/work-orders" });
             Assert.All(sample.Tags.Keys, key => Assert.Contains(key, allowedHttpTags));
         });
         var pool = samples.Where(sample => sample.Meter == "Npgsql").ToArray();

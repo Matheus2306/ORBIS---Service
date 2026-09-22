@@ -1,5 +1,9 @@
 # Autonomia
 
+## AUT-017 — preservar contratos na organização em controllers
+
+Problema: Program concentrava transporte de oito operações; usuário solicitou controllers e anexou expansão funcional. Investigação: inventário real, baseline 126 testes e cinco migrations. Alternativas: Minimal APIs agrupadas ou MVC; escolhido MVC conforme pedido, sem alterar domínio/banco. Experimento: suíte detectou cursor vazio convertido a null e template de métrica sem barra inicial. Decisão: preservar400 para cursor inválido, exigir policy nomeada com claims completas, documentar rótulo MVC e manter componentes nativos de saúde/OpenAPI. Evidência: 140 testes/26 regras/12 checks; catálogo/matriz distinguem planejamento de implementação. Intervenção humana: retomada solicitada, nenhuma decisão técnica exigiu confirmação.
+
 ## AUT-001 — selecionar a fundação
 
 Problema: repositório vazio com requisitos amplos de produção. Evidência: inspeção local. Alternativas: distribuir serviços desde o início ou construir limites dentro de um processo. Decisão: monólito modular e foco inicial no isolamento. Motivo: transações locais e menor carga operacional; separar serviços exige evidência posterior. Medição: nenhuma comparação de throughput disponível. Intervenção humana: nenhuma.

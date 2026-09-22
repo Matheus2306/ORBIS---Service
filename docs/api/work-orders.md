@@ -1,5 +1,7 @@
 # API de ordens — contrato implementado
 
+Transporte organizado em `Controllers/WorkOrdersController.cs` (leitura/criação) e `Controllers/WorkOrderTransitionsController.cs` (atribuir/aceitar/iniciar/concluir/cancelar). DTOs em `Contracts/WorkOrderRequests.cs`; regras permanecem na aplicação/domínio. Rotas e contratos preservados conforme ADR-014. Health checks e OpenAPI usam os componentes nativos do ASP.NET. Binding inválido retorna Problem Details sem eco de valores recebidos; cursor vazio e parâmetros de paginação repetidos retornam 400.
+
 `GET /v1/work-orders/{id:guid}` exige access token JWT e Host de domínio verificado no diretório. Resposta 200: id, description, status (nome textual do estado), version, createdAt UTC. `Cache-Control: no-store`. Nenhum dado de outro usuário/tenant integra o DTO.
 
 401: token ausente/inválido, assinatura/tipo/issuer/audience/lifetime incorretos; WWW-Authenticate Bearer sem detalhes internos. 403: principal autenticado não cumpre policy de claims. 404 uniforme: recurso ausente, host não registrado/não verificado, tenant/usuário/membership inativo, vínculo ou permissão insuficiente, tenant_id assinado divergente/inválido. 429: 16 operações simultâneas por instância, compartilhadas entre GET/POST, sem fila. 503: indisponibilidade/timeout PostgreSQL direto; erro inesperado de persistência retorna 500. Erros usam Problem Details com traceId; não retornam SQL/credenciais. Nenhuma promessa de ausência de side-channel temporal foi medida.

@@ -1,5 +1,9 @@
 # Progresso
 
+## 2026-09-22 — controllers e auditoria de expansão
+
+Oito rotas extraídas em dois controllers, DTOs separados e policy de claims preservada. Baseline 126 testes; migração revelou cursor vazio aceito por MVC e mudança de rótulo http.route. Corrigidos/documentados, 140 testes e 12 checks locais aprovados. Auditoria e catálogo de 111 operações para 31 domínios, 11 implementadas; matriz de autorização e sequência P0 definidas. Sem mudança de schema, sem nova capability de negócio e sem performance HTTP validada. Próximo: contexto tenant/identidade e fronteira administrativa.
+
 ## 2026-09-17 — abertura
 
 Ambiente e sandbox inspecionados. Escrita de documentação dentro do PROJECT_ROOT valida a área permitida. Repositório inicializado. SDK e PostgreSQL identificados. Pesquisa em fontes oficiais de ASP.NET Core, EF e PostgreSQL realizada. Fase 0 em execução; nenhum gate de produção aprovado.

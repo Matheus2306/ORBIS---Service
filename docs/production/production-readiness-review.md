@@ -6,7 +6,7 @@ Data: 2026-09-22. Resultado: **NO-GO**. Núcleo de API testado localmente, sem p
 |---|---|---|
 | Produto/jornadas | desenho inicial | três experiências completas e aceite |
 | Build reproduzível/CI | gate local de 12 checks aprovado; CI remoto pendente | pipeline remoto verde e artefato imutável |
-| Isolamento/autorização | PostgreSQL, ciclo de ordens, dataset e HTTPS/gerador testados; restante pendente | 126 testes no relatório do gerador HTTPS; novos componentes exigem testes próprios |
+| Isolamento/autorização | PostgreSQL, ciclo de ordens, controllers, dataset e HTTPS/gerador testados; restante pendente | 140 testes no relatório de controllers; novos componentes exigem testes próprios |
 | Security review | pendente | SAST/SCA/secrets/container/DAST + revisão |
 | Migrations | upgrade local com legado aprovado; escala pendente | N/N+1, locks, dataset representativo |
 | Backup/PITR | ausente | backup criptografado e WAL verificados |
