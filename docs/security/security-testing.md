@@ -9,3 +9,5 @@ Exercitar replay/idempotência, payload extra, spoof de Host/forwarded headers, 
 Registrar commit, ferramenta/versão, configuração sanitizada, cobertura, exclusões justificadas, resultados e correções. Críticos bloqueiam release. Não afirmar segurança concluída por compilar ou por um conjunto de testes negativos.
 
 O [gate local](../testing/local-validation.md) já reúne checks reais com manifesto: auditoria NuGet JSON interpretada, Gitleaks fixado, testes e alinhamento de migrations. Ausência de ferramenta, diagnóstico do scanner e evidência incompleta são falhas. Não substitui SAST especializado, scan de imagem, DAST ou revisão de segurança; esses gates continuam pendentes.
+
+O [gerador HTTPS](../testing/reports/2026-09-22-load-generator.md) tem binário/scanner/insumos conferidos e govulncheck no nível dos módulos presentes no executável, incluindo sua versão upstream. Não usar o binário oficial antigo com runtime fora de suporte. Testes externos exigem status de autorização e rejeição x509; timeout não comprova certificado negado. Resultado não equivale a DAST ou carga.

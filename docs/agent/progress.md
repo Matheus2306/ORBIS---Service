@@ -51,3 +51,7 @@ Pool da API nomeado orbis-runtime para não usar connection string como atributo
 ## 2026-09-21 — evidência local reproduzível
 
 Consolidados 11 checks em validate-local.ps1 com manifesto/hashes/estado Git e TRX novos. Auditoria JSON não depende apenas do exit code; pacotes/diagnósticos/incompletude bloqueiam. Testes ignorados, assemblies omitidas e fonte alterada também bloqueiam. Execução final aprovada: 119 testes, 21 regras, migrations alinhadas e scanners sem achados reportados. Scanner ausente foi rejeitado em ensaio separado. F6 segue em curso, sem CI remoto/imagem/perf smoke. Próximo: gerador e host Performance isolados para carga HTTPS.
+
+## 2026-09-22 — gerador externo com evidência de transporte
+
+Vegeta escolhido após comparação e experimento: binário oficial usa Go antigo com achados; rebuild final fixa SDK/dependências corrigidas e conserva versão upstream no build-info. Bootstrap em pasta nova reproduziu bytes, auditoria de módulos passou e manifesto antigo foi rejeitado após alteração de pins. Sete casos externos comprovam TLS/autorização/isolamento/replay com tokens por stdin e sem proxy/trust store global. Primeiro gate falhou por timeout no teste PostgreSQL/localhost; resultado preservado, teste tornou-se específico por IP + TargetHost sem relaxar VerifyFull. Seis testes focados passaram; gate final: 126 testes, 26 regras, 12 checks verdes. F5 ainda requer host separado, telemetria de recursos e baseline Small; produção/1M continuam não validados.

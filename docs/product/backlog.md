@@ -10,8 +10,8 @@ Estados: **em curso**, **pendente**, **bloqueado**, **concluído com evidência*
 | F3 | P0 | API autenticada, memberships e resolução por host | Assinatura/issuer/audience + membership + recurso + contratos HTTP | concluído com evidência local: 54 testes; IdP operacional em P1 |
 | F4 | P0 | Criação/aceite/conclusão e auditoria | Idempotência, 100 atualizações concorrentes, atomicidade | concluído no backend: relatório de 98 testes; performance em F5, UX em P3 |
 | F3b | P0 | Listagem de ordens com keyset | Autorização no SQL, limite/cursor, contrato e isolamento | concluído funcionalmente: relatório de 86 testes; performance em F5 |
-| F5 | P0 | Dataset Small e baseline Release | RPS/percentis/erros + métricas do gerador e servidor | em curso: Small, 960 amostras SQL sob RLS, HTTPS e emissão de métricas; 119 testes; carga HTTP pendente |
-| F6 | P0 | CI reproduzível | Restore locked, format, build, testes, scanners e perf smoke | em curso: gate local com manifesto aprovado; CI remoto/imagem/perf smoke pendentes |
+| F5 | P0 | Dataset Small e baseline Release | RPS/percentis/erros + métricas do gerador e servidor | em curso: Small, 960 amostras SQL, HTTPS/métricas e gerador fixado; 126 testes; host separado e baseline pendentes |
+| F6 | P0 | CI reproduzível | Restore locked, format, build, testes, scanners e perf smoke | em curso: 12 checks locais e 26 regras aprovados; CI remoto/imagem/perf smoke pendentes |
 | P1 | P1 | IdP real e onboarding do tenant | Convite/revogação/MFA administrativo; nenhuma credencial de demonstração | pendente |
 | P2 | P1 | Catálogo, clientes, prestadores e agenda | Jornada completa + políticas de horário/concorrência | pendente |
 | P3 | P1 | Portais administrativo/cliente/prestador | E2E, acessibilidade, mobile, estados vazios/erro/loading | pendente |

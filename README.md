@@ -26,7 +26,7 @@ dotnet build -c Release --no-restore -warnaserror
 ./scripts/test-postgres.ps1
 ```
 
-O script exige PowerShell 7 e PostgreSQL 18, aceita `-PgBin` e `-Port`, cria cluster local exclusivo com SCRAM, credenciais aleatórias e [TLS com CA efêmera verificada](docs/testing/local-postgres-tls.md), executa todos os testes e encerra o servidor. Não usa bases existentes. Sem PostgreSQL, `dotnet test tests/Orbis.Tests -c Release` executa apenas domínio/arquitetura; isso não substitui integração. Não executar `dotnet test` da solução sem as conexões de teste: a suíte falha intencionalmente quando faltam.
+Antes da primeira suíte completa, prepare o [gerador HTTPS fixado](performance-tests/vegeta/README.md) com `./scripts/build-load-generator.ps1`. O script de testes exige PowerShell 7 e PostgreSQL 18, aceita `-PgBin` e `-Port`, cria cluster local exclusivo com SCRAM, credenciais aleatórias e [TLS com CA efêmera verificada](docs/testing/local-postgres-tls.md), executa todos os testes e encerra o servidor. Não usa bases existentes. Sem PostgreSQL, `dotnet test tests/Orbis.Tests -c Release` executa apenas domínio/arquitetura; isso não substitui integração. Não executar `dotnet test` da solução sem as conexões de teste: a suíte falha intencionalmente quando faltam.
 
 Para reunir restore/build/testes/scanners/migrations e registrar evidências, use `./scripts/validate-local.ps1` conforme o [gate local](docs/testing/local-validation.md). A execução [aprovada](docs/testing/reports/2026-09-21-local-gate.md) valida engenharia local; CI remoto e gates de produção continuam pendentes.
 
@@ -36,4 +36,4 @@ O [gerador sintético](docs/database/dataset-plan.md) prepara Small com 1.000 us
 
 Os [planos SQL Small](docs/performance/reports/2026-09-18-small-query-plans.md) foram capturados com runtime restrito e RLS, incluindo páginas keyset/offset equivalentes. Reprodução: `./scripts/capture-query-plans.ps1 -Profile HotTenant`. São medições seriais de consultas, não teste de carga da API.
 
-A suíte corrente possui [119 testes aprovados](docs/testing/reports/2026-09-21-native-metrics.md), incluindo atributos de métricas HTTP/TLS/pool sem conteúdo sensível nos casos exercitados. [Observabilidade](docs/operations/observability.md) distingue sinais emitidos de coleta, alertas e operação ainda pendentes.
+A suíte corrente possui [126 testes aprovados](docs/testing/reports/2026-09-22-load-generator.md), 26 casos das regras e 12 checks do gate local. Inclui atributos controlados de métricas HTTP/TLS/pool e gerador HTTPS externo compilado de fontes fixadas, com dependências auditadas e rejeições de certificado/tenant/token. [Observabilidade](docs/operations/observability.md) distingue emissão de sinais de coleta/alertas pendentes. Esses testes não comprovam carga ou escala.

@@ -148,7 +148,7 @@ public sealed class HttpsApiTests(DatabaseFixture database)
 
     private sealed record MetricSample(string Meter, string Name, double Value, Dictionary<string, object?> Tags);
 
-    private sealed class HttpsServer : IAsyncDisposable
+    internal sealed class HttpsServer : IAsyncDisposable
     {
         private readonly X509Certificate2 certificate;
         private readonly X509Certificate2 root;

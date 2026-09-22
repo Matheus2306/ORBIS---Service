@@ -6,4 +6,5 @@
 | ENV-02 | Shell sem saída de rede por padrão | Consulta oficial NuGet autorizada via revisão automática; restore requer mesma modalidade |
 | OPS-01 | Sem cloud, domínio, IdP, cofre ou orçamento provisionados | Trabalho local continua; implantação, HA e custos reais permanecem não validados |
 | PERF-01 | Nenhuma medição da aplicação | Priorizar baseline; proibir rótulo 1M SCALE VALIDATED |
+| PERF-02 | Host de carga/telemetria de recursos ainda ausentes | Gerador externo preparado e transporte testado; implementar execução separada antes de medir capacidade |
 | PROD-01 | Hipóteses comerciais ainda sem pesquisa com clientes | Entitlements propostos, sem cobrança ou promessa contratual |

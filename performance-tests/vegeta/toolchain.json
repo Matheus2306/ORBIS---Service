@@ -1,0 +1,14 @@
+{
+  "version": "12.13.0-orbis.1",
+  "upstreamCommit": "507c4f028fbad80168f3b734dab9530d3aabfefa",
+  "module": "github.com/tsenart/vegeta/v12@v12.13.0",
+  "moduleSum": "h1:J/UiNS3f69MkL0tsRLVUUV8uXXQZxdRUchtS+GYiSFc=",
+  "goVersion": "go1.27.1",
+  "goArchive": "go1.27.1.windows-amd64.zip",
+  "goArchiveSha256": "A3911B5E0E1B1053F25ED0675F4C1C6AAD1E2BFCF253DF2B9BE4CAABD2EDD95D",
+  "binarySha256": "9A91280566763E024126CE5B3E036A6D0839EAC1FDDEF85F23A8AD80AA18663E",
+  "scannerModule": "golang.org/x/vuln@v1.8.0",
+  "scannerModuleSum": "h1:clG4qBU6zH5VKjti8n5j8BBuYzoSha392xXMkXS351U=",
+  "scannerSha256": "33AC9F913BC2B52D8374BE5E7B15279850166B5E0B305E0B6555BDDCA28B5A12",
+  "scannerPackage": "golang.org/x/vuln/cmd/govulncheck@v1.8.0"
+}

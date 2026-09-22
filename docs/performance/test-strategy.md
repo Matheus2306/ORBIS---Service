@@ -1,6 +1,6 @@
 # Estratégia de performance
 
-Ferramenta candidata: k6 para HTTP com arrival rate, thresholds e execução distribuível. Alternativas NBomber (ecossistema C#), Locust (Python), JMeter/Gatling (runtime adicional). Escolha k6 pelo workload aberto e portabilidade de cenários, a validar ao instalar gerador. BenchmarkDotNet reservado a CPU/allocations comprovadamente críticos; nenhum microbenchmark substitui aplicação+banco.
+Gerador local adotado: Vegeta 12.13.0-orbis.1, build fixado com CA explícita e chegada configurável; [ADR-013](../architecture/adr/ADR-013-load-generator.md) compara k6, NBomber, Locust, JMeter/Gatling e implementação própria. Transporte/autorização testados; baseline e orquestração distribuída ainda não existem. Comparar chegadas solicitadas e timestamps reais: workers/conexões limitados podem atrasar a carga e invalidar a conclusão de capacidade. k6 permanece alternativa para jornadas/distribuição. BenchmarkDotNet reservado a CPU/allocations comprovadamente críticos; nenhum microbenchmark substitui aplicação+banco.
 
 | Cenário | Procedimento reproduzível | Aceite / evidência |
 |---|---|---|

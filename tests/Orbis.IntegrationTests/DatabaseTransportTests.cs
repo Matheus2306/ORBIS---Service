@@ -43,9 +43,19 @@ public sealed class DatabaseTransportTests(DatabaseFixture database)
     {
         var settings = new NpgsqlConnectionStringBuilder(database.RuntimeConnection) { Pooling = false };
         if (untrustedRoot) settings.RootCertificate = Path.Combine(Path.GetDirectoryName(settings.RootCertificate!)!, "untrusted-root.crt");
-        else settings.Host = "localhost"; // localhost não faz parte dos SANs do certificado de teste.
-        await using var connection = new NpgsqlConnection(settings.ConnectionString);
+        var builder = new NpgsqlDataSourceBuilder(settings.ConnectionString) { Name = "orbis-tls-test" };
+        var configured = false;
+        builder.UseSslClientAuthenticationOptionsCallback(options =>
+        {
+            // Conecta ao IP conhecido; DNS/IPv6 de localhost não podem consumir o teste de validação do nome.
+            Assert.Equal("127.0.0.1", options.TargetHost);
+            if (!untrustedRoot) options.TargetHost = "localhost";
+            configured = true;
+        });
+        await using var source = builder.Build();
+        await using var connection = source.CreateConnection();
         var error = await Assert.ThrowsAsync<NpgsqlException>(() => connection.OpenAsync());
+        Assert.True(configured);
         Assert.IsType<AuthenticationException>(error.InnerException);
     }
 

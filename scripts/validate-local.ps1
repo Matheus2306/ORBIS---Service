@@ -62,6 +62,11 @@ try {
     Invoke-Check 'gate-self-tests' $pwsh @('-NoProfile', '-File', (Join-Path $PSScriptRoot 'test-validation-rules.ps1')) | Out-Null
     Invoke-Check 'restore' $dotnet @('restore', '--locked-mode', '--force', '--no-http-cache') | Out-Null
     Invoke-Check 'tool-restore' $dotnet @('tool', 'restore') | Out-Null
+    . (Join-Path $PSScriptRoot 'load-generator.ps1')
+    $generator = Get-VerifiedLoadGenerator
+    $manifest.loadGeneratorSha256 = $generator.binarySha256
+    $scanPath = Invoke-Check 'load-generator-audit' $generator.scanner @('-mode=binary', '-scan=module', '-show=version', '-db=https://vuln.go.dev', $generator.binary)
+    if ((Get-Content -LiteralPath $scanPath -Raw) -notmatch '(?m)^No vulnerabilities found\.\r?$') { throw 'Generator audit returned incomplete output.' }
     Invoke-Check 'format' $dotnet @('format', '--verify-no-changes', '--no-restore') | Out-Null
     Invoke-Check 'build' $dotnet @('build', '-c', 'Release', '--no-restore', '-warnaserror') | Out-Null
     $results = Join-Path $runRoot 'test-results'

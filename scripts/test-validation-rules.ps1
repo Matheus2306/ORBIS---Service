@@ -1,5 +1,6 @@
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'validation-rules.ps1')
+. (Join-Path $PSScriptRoot 'load-generator.ps1')
 $project = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../src/Orbis.Api/Orbis.Api.csproj'))
 $checked = 0
 function Assert-Rejected([scriptblock]$Action) {
@@ -44,4 +45,15 @@ Assert-Rejected { Assert-TestResults @([xml]$trxText.Replace('outcome="Passed"',
 Assert-Rejected { Assert-TestResults @([xml]$trxText.Replace('outcome="Completed"', 'outcome="Aborted"')) @('Example.Tests.dll') }
 Assert-Rejected { Assert-TestResults @([xml]$trxText.Replace('total="1"', 'total="2"')) @('Example.Tests.dll') }
 Assert-Rejected { Assert-TestResults @([xml]$trxText.Replace('failed="0"', '')) @('Example.Tests.dll') }
+# Um binário aprovado não autoriza usar locks novos sem reconstrução correspondente.
+$pinsRoot = Join-Path $PSScriptRoot '../performance-tests/vegeta'
+function New-GeneratorInputs {
+    @('toolchain.json', 'go.mod', 'go.sum') | ForEach-Object { @{ file=$_; sha256=(Get-FileHash (Join-Path $pinsRoot $_)).Hash } }
+}
+Assert-LoadGeneratorInputs (New-GeneratorInputs) $pinsRoot
+$checked++
+Assert-Rejected { Assert-LoadGeneratorInputs @() $pinsRoot }
+Assert-Rejected { $inputs=New-GeneratorInputs; $inputs[0].sha256='changed'; Assert-LoadGeneratorInputs $inputs $pinsRoot }
+Assert-Rejected { $inputs=New-GeneratorInputs; $inputs[1]=$inputs[0]; Assert-LoadGeneratorInputs $inputs $pinsRoot }
+Assert-Rejected { $inputs=New-GeneratorInputs; $inputs[2].file='../go.sum'; Assert-LoadGeneratorInputs $inputs $pinsRoot }
 Write-Output "$checked validation-rule cases passed. These are not application/load tests."

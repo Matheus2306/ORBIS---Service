@@ -1,12 +1,12 @@
 # Production readiness review
 
-Data: 2026-09-21. Resultado: **NO-GO**. Núcleo de API testado localmente, sem produção implantada. Não atribuir Production Ready ou Production Scale Validated.
+Data: 2026-09-22. Resultado: **NO-GO**. Núcleo de API testado localmente, sem produção implantada. Não atribuir Production Ready ou Production Scale Validated.
 
 | Gate | Estado inicial | Evidência necessária |
 |---|---|---|
 | Produto/jornadas | desenho inicial | três experiências completas e aceite |
-| Build reproduzível/CI | gate local de 11 checks aprovado; CI remoto pendente | pipeline remoto verde e artefato imutável |
-| Isolamento/autorização | PostgreSQL, ciclo de ordens, dataset e HTTPS local testados; restante pendente | 119 testes no relatório de métricas nativas; novos componentes exigem testes próprios |
+| Build reproduzível/CI | gate local de 12 checks aprovado; CI remoto pendente | pipeline remoto verde e artefato imutável |
+| Isolamento/autorização | PostgreSQL, ciclo de ordens, dataset e HTTPS/gerador testados; restante pendente | 126 testes no relatório do gerador HTTPS; novos componentes exigem testes próprios |
 | Security review | pendente | SAST/SCA/secrets/container/DAST + revisão |
 | Migrations | upgrade local com legado aprovado; escala pendente | N/N+1, locks, dataset representativo |
 | Backup/PITR | ausente | backup criptografado e WAL verificados |

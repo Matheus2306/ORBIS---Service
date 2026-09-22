@@ -2,7 +2,9 @@
 
 Execute `./scripts/validate-local.ps1` na estação de engenharia. Requer PowerShell 7, SDK de global.json, Git, PostgreSQL 18 e Gitleaks **8.30.1** previamente obtido da [release oficial](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1) com checksum verificado. O scanner padrão está em `.artifacts/tools/gitleaks-8.30.1/gitleaks.exe`; `-GitleaksPath`, `-PgBin` e `-Port` permitem outros caminhos/porta. O script não baixa executáveis, não modifica configurações globais, não publica artefatos e não usa banco existente.
 
-O gate executa, nesta ordem: autotestes das regras de evidência; restore locked com reavaliação e sem HTTP cache; restore das ferramentas fixadas; formatação; build Release com warnings como erros; suíte completa contra cluster descartável TLS; auditoria NuGet transitiva em JSON v1; Gitleaks redigido; comparação dos dois modelos EF com migrations; verificação do diff. Migrations são aplicadas e exercitadas pela suíte real; a comparação adicional detecta alterações de modelo sem migration.
+Prepare também o [gerador fixado](../../performance-tests/vegeta/README.md) com `./scripts/build-load-generator.ps1`. Essa preparação explícita baixa o SDK e os módulos; o gate apenas verifica os artefatos e consulta advisories. Ausência ou hash diferente não causa fallback nem skip.
+
+O gate executa, nesta ordem: autotestes das regras de evidência; restore locked com reavaliação e sem HTTP cache; restore das ferramentas fixadas; auditoria dos módulos presentes no gerador; formatação; build Release com warnings como erros; suíte completa contra cluster descartável TLS; auditoria NuGet transitiva em JSON v1; Gitleaks redigido; comparação dos dois modelos EF com migrations; verificação do diff. Migrations são aplicadas e exercitadas pela suíte real; a comparação adicional detecta alterações de modelo sem migration.
 
 Scanner ausente/versão diferente, saída nativa não zero, relatório ausente/inválido, diagnóstico NuGet, qualquer dependência vulnerável, projeto omitido, teste falho/ignorado ou mudança do código durante a execução impedem aprovação. A listagem NuGet é analisada como JSON: exit code zero sozinho não comprova ausência de vulnerabilidades. Fonte e escopo são conferidos contra NuGet.Config e todos os projetos da solução. Não há flag para ignorar gates.
 
@@ -21,3 +23,5 @@ As regras possuem casos sintéticos que rejeitam evidência incompleta, feed com
 Migração para CI deverá preservar os validadores e executar contra snapshot limpo, armazenar evidências com acesso restrito e incluir os gates pendentes. Não marcar F6 concluído por possuir um script local. Não usar um relatório antigo para promover uma revisão diferente.
 
 [Execução real e hashes](reports/2026-09-21-local-gate.md): 119 testes de aplicação e 21 casos das regras; gate local aprovado, produção não aprovada. Somente o caminho Windows foi executado.
+
+[Incremento de 2026-09-22](reports/2026-09-22-load-generator.md): 126 testes, 26 regras e 12 checks aprovados. Inclui govulncheck fixado, modo texto/module, exit code e mensagem final conferidos; JSON não é usado porque o scanner documenta zero mesmo com achados nesse formato. Hashes dos insumos precisam corresponder ao build aprovado. Somente Windows x64 validado.

@@ -55,3 +55,11 @@ Problema: falta provar emissão e controlar atributos antes de coletar carga. In
 ## AUT-014 — automatizar verificação sem aprovar por omissão
 
 Problema: repetição manual dos checks e scanners que podem retornar zero com achados. Decisão: script único, interpretação JSON/TRX, cobertura de projetos/assemblies, snapshots/hashes e status de engenharia local separado de produção. Experimento: scanner ausente, relatórios sintéticos inválidos e execução completa em cluster novo. Evidência: rejeição não zero do scanner ausente, 21 regras e 119 testes aprovados; 11 checks reais verdes. Intervenção humana: retomada solicitada durante a execução; nenhuma decisão técnica exigiu confirmação.
+
+## AUT-015 — validar também a ferramenta que produzirá evidência
+
+Problema: falta gerador HTTPS externo com CA por processo; binário oficial candidato usa runtime fora de suporte. Alternativas no ADR-013. Experimento: govulncheck encontrou 63 achados de símbolos no binário distribuído e dois após só recompilar. Decisão: módulo versionado intacto com SDK suportado, x/net/x/text corrigidos e locks/hashes fixados. Compilação em pasta nova reproduziu bytes; scanner no nível module não reportou achados. Sete testes externos e cinco regras novas validaram transporte e vínculo entre insumos/binário. Não há ganho de performance alegado. Intervenção humana: retomada solicitada, nenhuma decisão técnica exigiu confirmação.
+
+## AUT-016 — não confundir timeout com segurança comprovada
+
+Problema: gate de 2026-09-21 teve 125/126, por timeout no teste PostgreSQL de nome incorreto. Investigação: localhost resolve IPv6/IPv4, banco escuta IPv4; sem trace da falha não se afirmou causa exata. Decisão: conectar por IP e variar somente TargetHost TLS, mantendo validador, CA, VerifyFull e prazo. Evidência: seis casos focados e suíte final 126/126, 26 regras e 12 checks aprovados. Falha original e limites documentados. Intervenção humana: nenhuma decisão técnica exigiu confirmação.

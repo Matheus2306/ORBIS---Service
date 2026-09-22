@@ -2,6 +2,8 @@
 
 Estratégia e matriz em docs/performance/test-strategy.md. Scripts serão introduzidos junto aos endpoints reais e credenciais de teste; não medir health checks e chamar de capacidade de negócio. Não versionar tokens. Relatórios sanitizados em docs/performance/reports; dumps de telemetria locais em .artifacts.
 
+O [gerador Vegeta fixado](vegeta/README.md) possui bootstrap reproduzível e testes HTTPS de autenticação/isolamento/replay. [Evidência de 126 testes](../docs/testing/reports/2026-09-22-load-generator.md). Esses casos enviam somente oito requisições funcionais; nenhum cenário de baseline ou capacidade foi validado.
+
 ## Planos SQL locais
 
 Após build Release, `./scripts/capture-query-plans.ps1 -Profile Uniform` (ou HotTenant) cria Small seed 42 em cluster descartável, aplica os grants do runtime, captura consultas e encerra PostgreSQL. O manifesto do dataset e `query-plans.json` ficam no mesmo diretório de evidências. O probe recusa credencial privilegiada, RLS inativa e volumes diferentes do Small esperado. A preparação usa outra credencial; as medições abrem conexão como `orbis_runtime`.

@@ -20,7 +20,9 @@ Fluxo exigido: problema → evidência → alternativas → experimento → medi
 | Cloudflare/CDN/WAF | Fronteira pública e assets | Avaliar com domínio/hosting; API protegida não pode ser cacheada indiscriminadamente |
 | Kubernetes/service mesh | Um serviço sem necessidade operacional demonstrada | Não adotar; plataforma gerida é candidata |
 | Terraform/OpenTofu | Reprodução de infraestrutura | Escolher depois do provedor; não criar IaC fictícia |
-| k6 | Testes HTTP com arrival rate e distribuição | Candidato; observar gerador e validar thresholds |
+| k6 | Testes HTTP com arrival rate e distribuição | Alternativa futura; não experimentado; primeira integração local usa Vegeta (ADR-013) |
+| Vegeta 12.13.0-orbis.1 | CLI externo com taxa configurável e CA por processo | Adotado para transporte local; build Go 1.27.1/grafo corrigido reproduzível e 7 testes; baseline/recursos/distribuição pendentes |
+| Go/govulncheck | Compilar e auditar o gerador sem runtime antigo vulnerável | Ferramentas isoladas da API, versões/checksums/locks fixados; nenhuma dependência Go no produto |
 | BenchmarkDotNet | Microgargalo de CPU ainda não existe | Reservado a código onde profiling justificar |
 | System.Diagnostics.Metrics | Provar sinais HTTP/TLS/pool antes de carga | Nativo já disponível; emissão/atributos testados, coletor/backend ainda não adotados |
 | Gitleaks 8.30.1 | Gate de segredos exigido; regex isolada insuficiente | CLI MIT verificado, versão fixada no gate local; sem runtime/serviço novo; ausência falha a validação |
