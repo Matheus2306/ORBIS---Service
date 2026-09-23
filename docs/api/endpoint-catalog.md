@@ -14,9 +14,9 @@ Testes **O** = ApiIsolation/OrderListing/OrderCreation/OrderTransition/Controlle
 
 | ID | Método | Rota | Domínio | Capability | Ator | Scope | Autorização | Request | Response | Status | Idempotência | Auditoria | Perf | Prioridade | Implementação | Testes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| API-001 | GET | `/v1/me` | Identity | Ler contexto próprio | próprio usuário | T | Self | — | UserContext | R | — | — | R | P0 | Planejado | Pendente |
-| API-002 | GET | `/v1/me/permissions` | Authorization | Ler permissões efetivas | próprio usuário | T | Self | — | PermissionSet | R | — | — | R | P0 | Planejado | Pendente |
-| API-003 | GET | `/v1/tenant` | Tenancy | Ler organização atual | perfil autorizado | T | Member | — | TenantSummary | R | — | — | R | P0 | Planejado | Pendente |
+| API-001 | GET | `/v1/me` | Identity | Ler contexto próprio | próprio usuário | T | Self | — | CurrentUserDetails | R | — | — | R | P0 | Implementado | CurrentContextTests |
+| API-002 | GET | `/v1/me/permissions` | Authorization | Ler permissões efetivas | próprio usuário | T | Self | — | CurrentPermissions | R | — | — | R | P0 | Implementado | CurrentContextTests |
+| API-003 | GET | `/v1/tenant` | Tenancy | Ler organização atual | perfil autorizado | T | Member | — | CurrentTenantDetails | R | — | — | R | P0 | Implementado | CurrentContextTests |
 | API-004 | GET | `/v1/tenant/settings` | Tenant Settings | Ler configurações | perfil autorizado | T | Settings.Read | — | TenantSettings | R | — | — | R | P1 | Planejado | Pendente |
 | API-005 | PATCH | `/v1/tenant/settings` | Tenant Settings | Alterar timezone/locale | perfil autorizado | T | Settings.Manage | timezone,locale,expectedVersion | TenantSettings | W | receipt | command | W | P1 | Planejado | Pendente |
 | API-006 | GET | `/v1/tenant/limits` | Quotas | Consultar entitlements efetivos | perfil autorizado | T | Subscription.Read | — | EffectiveLimits | R | — | — | R | P1 | Planejado | Pendente |
@@ -129,9 +129,9 @@ Testes **O** = ApiIsolation/OrderListing/OrderCreation/OrderTransition/Controlle
 ## Cobertura verificável
 
 - Domínios de produto planejados: 31; completos para baseline produtivo: 0.
-- Operações catalogadas: 111; implementadas: 11 (8 de negócio + 3 técnicas).
-- Integração funcional: 11 após validação de ControllerContract/OpenAPI; segurança de negócio: 8 com suíte negativa; performance HTTP: 0.
-- Restantes planejados P0: 46; P1: 42. Os demais são P2. Não confundir dependência implementada com domínio concluído.
+- Operações catalogadas: 111; implementadas: 14 (11 de negócio + 3 técnicas).
+- Integração funcional: 14 operações; segurança de negócio: 11 com suíte negativa. CurrentContextTests valida as três consultas de contexto, conforme relatório 2026-09-22-current-context. Performance HTTP: 0.
+- Restantes planejados P0: 43; P1: 42. Os demais são P2. Não confundir dependência implementada com domínio concluído.
 
 ## Consolidação e decisões pendentes
 

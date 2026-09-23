@@ -9,4 +9,4 @@
 | PERF-02 | Host de carga/telemetria de recursos ainda ausentes | Gerador externo preparado e transporte testado; implementar execução separada antes de medir capacidade |
 | PROD-01 | Hipóteses comerciais ainda sem pesquisa com clientes | Entitlements propostos, sem cobrança ou promessa contratual |
 | DEV-01 | Inicialização direta falha sem ConnectionStrings:Orbis | Ambiente local operacional precisa de conexão, migrations/grants e IdP; testes efêmeros não preparam execução direta |
-| API-01 | Apenas núcleo de ordens implementado | Controllers e 140 testes verdes; catálogo com 46 P0/42 P1 restantes; API BASELINE READY pendente |
+| API-01 | Baseline funcional incompleto | Ordens/contexto implementados; consultar catálogo para P0/P1 restantes; API BASELINE READY pendente |

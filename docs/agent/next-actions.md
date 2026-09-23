@@ -2,9 +2,9 @@
 
 ## Prioridade funcional solicitada em 2026-09-22
 
-Controllers/auditoria concluídos, 140 testes e 12 checks aprovados. Ler `api/api-gap-analysis.md`, `api/domain-capability-matrix.md`, `api/endpoint-catalog.md` e `security/authorization-matrix.md`. Catálogo: 111 operações, 11 implementadas; 46 P0/42 P1 restantes.
+Contexto atual e controllers concluídos, 153 testes e 12 checks aprovados. Ler `api/api-gap-analysis.md`, `api/domain-capability-matrix.md`, `api/endpoint-catalog.md` e `security/authorization-matrix.md`. Catálogo: 111 operações, 14 implementadas; 43 P0/42 P1 restantes.
 
-1. Implementar GET `/v1/me`, `/v1/me/permissions` e `/v1/tenant` para vínculo ativo no contexto atual; reutilizar resolução/RLS e testar negações/revogação, sem enumerar tenants alheios ou expor claims brutas.
+1. Implementar GET `/v1/members` e `/v1/members/{id}` com ReadMembers explícita, paginação keyset e teste de migration/isolamento. Clientes/prestadores não ganham essa permissão por ler o próprio contexto.
 2. Provisionamento/convites/memberships com control plane e grants separados; não ampliar runtime comum para mutar directory/memberships. Resolver IdP e inicialização local reportada pelo usuário.
 3. Clientes → prestadores → catálogo → solicitações, um domínio por incremento, atualizando matriz/catálogo/testes/estado/commit.
 4. Workflow/agenda/anexos/notificações/auditoria conforme dependências; não criar rotas vazias.

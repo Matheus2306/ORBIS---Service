@@ -27,4 +27,4 @@ O estado do agente informa o incremento corrente. Não fechar F3 com apenas aute
 
 ## Expansão da API — solicitação de 2026-09-22
 
-Priorizar a [matriz de capabilities](../api/domain-capability-matrix.md) e o [catálogo](../api/endpoint-catalog.md): 111 operações catalogadas, 11 implementadas; 46 P0 e 42 P1 ainda planejadas. Controllers finos, auditoria inicial e gap analysis constituem a preparação; não representam API BASELINE READY. Próximo incremento: contexto atual de identidade/tenant/permissões, depois provisionamento e memberships com fronteira administrativa própria. F5/F6 continuam gates, sem alegação de performance preservada somente pelo build.
+Priorizar a [matriz de capabilities](../api/domain-capability-matrix.md) e o [catálogo](../api/endpoint-catalog.md), fonte das contagens atuais. Controllers e contexto de identidade/tenant/permissões implementados; leitura de membros e administração/provisionamento são os próximos incrementos P0. A base ainda não representa API BASELINE READY. F5/F6 continuam gates, sem alegação de performance preservada somente pelo build.

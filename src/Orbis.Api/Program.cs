@@ -88,6 +88,8 @@ builder.Services.AddScoped<IWorkOrderReader, WorkOrderReader>();
 builder.Services.AddScoped<ReadWorkOrder>();
 builder.Services.AddScoped<ListWorkOrders>();
 builder.Services.AddScoped<ResolveTenantUser>();
+builder.Services.AddScoped<ReadCurrentContext>();
+builder.Services.AddScoped<ICurrentContextReader, CurrentContextReader>();
 builder.Services.AddScoped<CreateWorkOrder>();
 builder.Services.AddScoped<IWorkOrderCreator, WorkOrderCreator>();
 builder.Services.AddScoped<TransitionWorkOrder>();

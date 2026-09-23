@@ -4,10 +4,10 @@
 
 | Domínio | Estado | Prioridade | Entidades existentes ou propostas | Capabilities e endpoints candidatos |
 |---|---|---|---|---|
-| Identity | Parcial | P0 | UserAccount, ExternalIdentity; UserPreference futura | Contexto `/me`, permissões; login/MFA no IdP, preferências futuras |
-| Tenancy | Parcial | P0 | Tenant, TenantDomain; TenantSettings futuro | Contexto `/tenant`, settings; provisionamento no control plane |
+| Identity | Parcial: contexto implementado | P0 | UserAccount, ExternalIdentity; UserPreference futura | `/me` implementado; login/MFA no IdP e preferências pendentes |
+| Tenancy | Parcial: contexto implementado | P0 | Tenant, TenantDomain; TenantSettings futuro | `/tenant` implementado; settings/provisionamento pendentes |
 | Membership | Parcial | P0 | Membership; Invitation futura | `/members`, convites, suspender/ativar; proteger último administrador |
-| Authorization | Parcial | P0 | Permission flags; Role futura | `/me/permissions`, policies e autorização de recurso; não criar CRUD público de permissões |
+| Authorization | Parcial: leitura de permissões implementada | P0 | Permission flags; Role futura | `/me/permissions`, policies e autorização de recurso existentes; gestão delegada pendente |
 | Customers | Inexistente | P0 | Customer, CustomerContact | `/customers`, atualizar/arquivar/restaurar, histórico preservado |
 | Providers | Parcial: designação por UserId | P0 | ProviderProfile, ProviderMembership | `/providers`, ativar/suspender; perfil tenant-local |
 | Provider Skills | Inexistente | P1 | Skill, ProviderSkill | `/providers/{id}/skills`, competências do catálogo |

@@ -1,5 +1,9 @@
 # Autonomia
 
+## AUT-018 — contexto sem ampliação de autoridade
+
+Problema: portais não conseguiam obter identidade/organização/permissões atuais. Decisão: três GETs mínimos, resolvendo domínio/identidade e lendo membership sob RLS. Risco: consulta ao diretório enquanto a transação tenant segura conexão consumiria duas posições do pool. Implementação libera a primeira conexão antes da seguinte; teste real com pool1 passou. Evidência:153 testes/12 checks; sem alteração de grants/schema, sem capacidade de carga alegada. Intervenção humana: nenhuma.
+
 ## AUT-017 — preservar contratos na organização em controllers
 
 Problema: Program concentrava transporte de oito operações; usuário solicitou controllers e anexou expansão funcional. Investigação: inventário real, baseline 126 testes e cinco migrations. Alternativas: Minimal APIs agrupadas ou MVC; escolhido MVC conforme pedido, sem alterar domínio/banco. Experimento: suíte detectou cursor vazio convertido a null e template de métrica sem barra inicial. Decisão: preservar400 para cursor inválido, exigir policy nomeada com claims completas, documentar rótulo MVC e manter componentes nativos de saúde/OpenAPI. Evidência: 140 testes/26 regras/12 checks; catálogo/matriz distinguem planejamento de implementação. Intervenção humana: retomada solicitada, nenhuma decisão técnica exigiu confirmação.

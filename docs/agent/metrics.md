@@ -6,7 +6,7 @@
 | Runtime ASP.NET | 10.0.10 | `dotnet --info` |
 | PostgreSQL | 18.6 | binário local `postgres --version` |
 | Build Release | 0 warnings, 0 errors | .NET build da solução |
-| Testes | 140/140 aprovados; 0 ignorados | docs/testing/reports/2026-09-22-api-controllers.md |
+| Testes | 153/153 aprovados; 0 ignorados | docs/testing/reports/2026-09-22-current-context.md |
 | Gerador externo | Vegeta 12.13.0-orbis.1; build idêntico/auditado, 7 casos de transporte | 8 requests funcionais; nenhum baseline/RPS validado |
 | Métricas nativas | HTTP/TLS/conexões/pool emitidos; atributos controlados | NativeMetricsExposeBoundedRoutesAndPoolWithoutRequestData; sem baseline nem coletor externo |
 | Transporte HTTPS | HTTP/1.1 e HTTP/2 reais, CA alheia/nome errado negados | Kestrel em Performance; autenticação/isolamento/replay mantidos, sem carga |
@@ -18,8 +18,8 @@
 | Conclusão concorrente | 100 mesmas chaves → 1 efeito/99 replays; 100 chaves distintas → 1 efeito/99 conflitos | OrderTransitionTests; não é benchmark |
 | Secret scanning | sem leaks | Gitleaks 8.30.1, working tree, defaults, redaction |
 | Formatação | aprovada | dotnet format --verify-no-changes |
-| Gate local | 12 checks aprovados, 140 testes + 26 casos das regras | docs/testing/reports/2026-09-22-api-controllers.md; CI remoto não executado |
-| API | 111 operações catalogadas; 11 implementadas; 8 de negócio em controllers | 31 domínios planejados; nenhum baseline de domínio completo; sem carga HTTP |
+| Gate local | 12 checks aprovados, 153 testes + 26 casos das regras | docs/testing/reports/2026-09-22-current-context.md; CI remoto não executado |
+| API | 111 operações catalogadas; 14 implementadas; 11 de negócio em controllers | 31 domínios planejados; nenhum baseline de domínio completo; sem carga HTTP |
 | Migrations | ambos modelos alinhados; upgrade local populado aprovado | EF CLI + DirectoryMigrationTests |
 | Auditoria NuGet transitiva | sem vulnerabilidades reportadas pelo feed em 2026-09-22 | oito projetos; não equivale a security review |
 | Auditoria Go | sem vulnerabilidades reportadas nos módulos do gerador final | govulncheck 1.8.0 / module / vuln.go.dev, 2026-09-22; não certifica código de desenvolvimento fora do binário |
