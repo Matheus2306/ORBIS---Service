@@ -56,7 +56,7 @@ public sealed class IsolationTests
     public void MissingContextAndUnknownPermissionsFailClosed()
     {
         Assert.Throws<ArgumentException>(() => new TenantScope(Guid.Empty));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new Membership(Guid.NewGuid(), Guid.NewGuid(), (Permission)256));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Membership(Guid.NewGuid(), Guid.NewGuid(), (Permission)512));
         Assert.False(new Membership(Guid.NewGuid(), Guid.NewGuid(), Permission.None).Allows(Permission.None));
     }
 }

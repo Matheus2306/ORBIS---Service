@@ -4,12 +4,13 @@ public sealed class Membership
 {
     private const Permission KnownPermissions = Permission.ReadOwnOrders | Permission.ReadAllOrders |
         Permission.CreateOrders | Permission.AssignOrders | Permission.ExecuteAssignedOrders |
-        Permission.CancelOwnOrders | Permission.ManageOrders | Permission.ReadMembers;
+        Permission.CancelOwnOrders | Permission.ManageOrders | Permission.ReadMembers | Permission.ManageMembers;
 
     public Guid TenantId { get; private set; }
     public Guid UserId { get; private set; }
     public Permission Permissions { get; private set; }
     public bool IsActive { get; private set; }
+    public long Version { get; private set; } = 1;
 
     private Membership() { }
 
@@ -17,7 +18,7 @@ public sealed class Membership
     {
         if (tenantId == Guid.Empty || userId == Guid.Empty)
             throw new ArgumentException("Tenant and user must have an identity.");
-        if ((permissions & ~KnownPermissions) != 0)
+        if (!ArePermissionsValid(permissions))
             throw new ArgumentOutOfRangeException(nameof(permissions));
 
         TenantId = tenantId;
@@ -30,5 +31,19 @@ public sealed class Membership
         IsActive && permission != Permission.None && (Permissions & permission) == permission;
 
     // Suspensão revoga o vínculo inteiro, sem depender de claims antigas do token.
-    public void Suspend() => IsActive = false;
+    public void Suspend() => ChangeAccess(Permissions, false);
+
+    public static bool ArePermissionsValid(Permission permissions) => (permissions & ~KnownPermissions) == 0;
+
+    public bool ChangeAccess(Permission permissions, bool isActive)
+    {
+        if (!ArePermissionsValid(permissions)) throw new ArgumentOutOfRangeException(nameof(permissions));
+        if (Permissions == permissions && IsActive == isActive) return false;
+        // A versão muda também na suspensão; uma edição antiga não pode reativar um vínculo silenciosamente.
+        var nextVersion = checked(Version + 1);
+        Permissions = permissions;
+        IsActive = isActive;
+        Version = nextVersion;
+        return true;
+    }
 }

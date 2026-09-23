@@ -75,6 +75,10 @@ public sealed class RuntimeDatabaseCheck(NpgsqlDataSource dataSource, TimeProvid
                         AND pg_has_role(r.oid,c.relowner,'USAGE'))
                 AND NOT has_schema_privilege(r.oid, 'public', 'CREATE')
                 AND NOT has_schema_privilege(r.oid, 'directory', 'CREATE')
+                AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+                    WHERE n.nspname='public' AND c.relname='membership_access_changes'
+                        AND (has_any_column_privilege(r.oid, c.oid, 'SELECT,INSERT,UPDATE,REFERENCES')
+                            OR has_table_privilege(r.oid, c.oid, 'DELETE,TRUNCATE,TRIGGER,MAINTAIN')))
                 AND NOT EXISTS (SELECT 1 FROM capabilities required
                     LEFT JOIN pg_catalog.pg_class c ON c.oid = to_regclass(required.relation)
                     WHERE c.oid IS NULL OR c.relkind NOT IN ('r','p')

@@ -14,6 +14,7 @@
     <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
     <Using Include="Xunit" />
     <None Include="../../infrastructure/postgresql/runtime-grants.sql" Link="runtime-grants.sql" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../infrastructure/postgresql/membership-administration-grants.sql" Link="membership-administration-grants.sql" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../performance-tests/vegeta/toolchain.json" Link="vegeta-toolchain.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

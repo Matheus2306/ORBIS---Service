@@ -16,7 +16,10 @@ internal static class DatasetTables
         new("directory.tenant_domains", "host,tenant_id,is_verified", "host", [Text, Uuid, NpgsqlDbType.Boolean], Domains),
         new("directory.users", "id,is_active", "id", [Uuid, NpgsqlDbType.Boolean], Users),
         new("directory.external_identities", "issuer,subject,user_id", "issuer,subject", [Text, Text, Uuid], Identities),
-        new("public.memberships", "tenant_id,user_id,permissions,is_active", "tenant_id,user_id", [Uuid, Uuid, Integer, NpgsqlDbType.Boolean], Memberships),
+        new("public.memberships", "tenant_id,user_id,permissions,is_active,version", "tenant_id,user_id", [Uuid, Uuid, Integer, NpgsqlDbType.Boolean, Bigint], Memberships),
+        // O dataset operacional não inventa concessões administrativas; mesmo a tabela vazia integra o checksum.
+        new("public.membership_access_changes", "tenant_id,actor_id,key,member_id,fingerprint,previous_permissions,previous_is_active,previous_version,permissions,is_active,version,occurred_at",
+            "tenant_id,actor_id,key", [Uuid, Uuid, Uuid, Uuid, Text, Integer, NpgsqlDbType.Boolean, Bigint, Integer, NpgsqlDbType.Boolean, Bigint, TimestampTz], _ => []),
         new("public.work_orders", "tenant_id,id,customer_user_id,provider_user_id,description,status,version,created_at", "tenant_id,id", [Uuid, Uuid, Uuid, Uuid, Text, Integer, Bigint, TimestampTz], Orders),
         new("public.work_order_audit", "tenant_id,id,actor_id,order_id,action,order_version,occurred_at", "tenant_id,id", [Uuid, Uuid, Uuid, Uuid, Text, Bigint, TimestampTz], Audit),
         new("public.order_creation_receipts", "tenant_id,actor_id,key,fingerprint,order_id,created_at", "tenant_id,actor_id,key", [Uuid, Uuid, Uuid, Text, Uuid, TimestampTz], CreationReceipts),
@@ -53,10 +56,10 @@ internal static class DatasetTables
     {
         for (var t = 0; t < recipe.TenantCount; t++)
         {
-            for (var u = 0; u < recipe.UsersPerTenant; u++) yield return [recipe.TenantId(t), recipe.UserId(t, u), (int)recipe.Permissions(u), true];
+            for (var u = 0; u < recipe.UsersPerTenant; u++) yield return [recipe.TenantId(t), recipe.UserId(t, u), (int)recipe.Permissions(u), true, 1L];
             // Um prestador também é cliente do tenant seguinte, sem duplicar sua identidade global.
             yield return [recipe.TenantId((t + 1) % recipe.TenantCount), recipe.UserId(t, recipe.UsersPerTenant - 1),
-                (int)(Permission.ReadOwnOrders | Permission.CreateOrders | Permission.CancelOwnOrders), true];
+                (int)(Permission.ReadOwnOrders | Permission.CreateOrders | Permission.CancelOwnOrders), true, 1L];
         }
     }
 

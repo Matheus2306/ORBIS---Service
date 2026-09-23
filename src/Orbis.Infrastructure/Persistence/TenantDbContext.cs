@@ -11,6 +11,7 @@ public sealed class TenantDbContext(DbContextOptions<TenantDbContext> options, T
 {
     private Guid TenantId => scope.TenantId;
     public DbSet<Membership> Memberships => Set<Membership>();
+    public DbSet<MembershipAccessChange> MembershipAccessChanges => Set<MembershipAccessChange>();
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public DbSet<WorkOrderAudit> OrderAudit => Set<WorkOrderAudit>();
     public DbSet<OrderCreationReceipt> CreationReceipts => Set<OrderCreationReceipt>();
@@ -22,14 +23,17 @@ public sealed class TenantDbContext(DbContextOptions<TenantDbContext> options, T
         members.ToTable("memberships", table =>
         {
             table.HasCheckConstraint("ck_membership_ids", "tenant_id <> '00000000-0000-0000-0000-000000000000' AND user_id <> '00000000-0000-0000-0000-000000000000'");
-            table.HasCheckConstraint("ck_membership_permissions", "permissions BETWEEN 0 AND 255");
+            table.HasCheckConstraint("ck_membership_permissions", "permissions BETWEEN 0 AND 511");
+            table.HasCheckConstraint("ck_membership_version", "version > 0");
         });
         members.HasKey(x => new { x.TenantId, x.UserId });
         members.Property(x => x.TenantId).HasColumnName("tenant_id").ValueGeneratedNever();
         members.Property(x => x.UserId).HasColumnName("user_id").ValueGeneratedNever();
         members.Property(x => x.Permissions).HasColumnName("permissions").HasConversion<int>();
         members.Property(x => x.IsActive).HasColumnName("is_active");
+        members.Property(x => x.Version).HasColumnName("version").HasDefaultValue(1L).IsConcurrencyToken();
         members.HasQueryFilter(x => x.TenantId == TenantId);
+        ConfigureMembershipHistory(modelBuilder);
 
         var orders = modelBuilder.Entity<WorkOrder>();
         orders.ToTable("work_orders", table =>
@@ -116,9 +120,40 @@ public sealed class TenantDbContext(DbContextOptions<TenantDbContext> options, T
         transition.HasOne<WorkOrder>().WithMany().HasForeignKey(x => new { x.TenantId, Id = x.OrderId }).OnDelete(DeleteBehavior.Restrict);
     }
 
-    public async Task<IDbContextTransaction> BeginTenantTransactionAsync(CancellationToken cancellationToken = default)
+    private void ConfigureMembershipHistory(ModelBuilder modelBuilder)
     {
-        var transaction = await Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        var changes = modelBuilder.Entity<MembershipAccessChange>();
+        changes.ToTable("membership_access_changes", table =>
+        {
+            table.HasCheckConstraint("ck_member_change_key", "key <> '00000000-0000-0000-0000-000000000000'");
+            table.HasCheckConstraint("ck_member_change_fingerprint", "fingerprint ~ '^[0-9A-F]{64}$'");
+            table.HasCheckConstraint("ck_member_change_permissions", "permissions BETWEEN 0 AND 511 AND previous_permissions BETWEEN 0 AND 511");
+            table.HasCheckConstraint("ck_member_change_version", "previous_version > 0 AND version > previous_version AND version - previous_version = 1");
+            table.HasCheckConstraint("ck_member_change_effect", "permissions <> previous_permissions OR is_active <> previous_is_active");
+        });
+        changes.HasKey(x => new { x.TenantId, x.ActorId, x.Key });
+        changes.Property(x => x.TenantId).HasColumnName("tenant_id").ValueGeneratedNever();
+        changes.Property(x => x.ActorId).HasColumnName("actor_id").ValueGeneratedNever();
+        changes.Property(x => x.Key).HasColumnName("key").ValueGeneratedNever();
+        changes.Property(x => x.MemberId).HasColumnName("member_id");
+        changes.Property(x => x.Fingerprint).HasColumnName("fingerprint").HasMaxLength(64).UseCollation("C");
+        changes.Property(x => x.PreviousPermissions).HasColumnName("previous_permissions").HasConversion<int>();
+        changes.Property(x => x.PreviousIsActive).HasColumnName("previous_is_active");
+        changes.Property(x => x.PreviousVersion).HasColumnName("previous_version");
+        changes.Property(x => x.Permissions).HasColumnName("permissions").HasConversion<int>();
+        changes.Property(x => x.IsActive).HasColumnName("is_active");
+        changes.Property(x => x.Version).HasColumnName("version");
+        changes.Property(x => x.OccurredAt).HasColumnName("occurred_at");
+        changes.HasQueryFilter(x => x.TenantId == TenantId);
+        changes.HasOne<Membership>().WithMany().HasForeignKey(x => new { x.TenantId, x.ActorId }).OnDelete(DeleteBehavior.Restrict);
+        changes.HasOne<Membership>().WithMany().HasForeignKey(x => new { x.TenantId, UserId = x.MemberId }).OnDelete(DeleteBehavior.Restrict);
+        changes.HasIndex(x => new { x.TenantId, x.MemberId, x.Version }).IsUnique();
+    }
+
+    public async Task<IDbContextTransaction> BeginTenantTransactionAsync(CancellationToken cancellationToken = default,
+        IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+    {
+        var transaction = await Database.BeginTransactionAsync(isolationLevel, cancellationToken);
         try
         {
             // SET LOCAL não sobrevive a commit/rollback nem contamina o próximo usuário da conexão.
@@ -152,7 +187,7 @@ public sealed class TenantDbContext(DbContextOptions<TenantDbContext> options, T
         foreach (var entry in ChangeTracker.Entries().Where(x => x.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
         {
             var tenant = entry.Property("TenantId");
-            if (entry.Entity is WorkOrderAudit or OrderCreationReceipt or OrderTransitionReceipt && entry.State != EntityState.Added)
+            if (entry.Entity is WorkOrderAudit or OrderCreationReceipt or OrderTransitionReceipt or MembershipAccessChange && entry.State != EntityState.Added)
                 throw new InvalidOperationException("Command history is immutable through the application.");
             if (tenant.CurrentValue is not Guid current || current != TenantId ||
                 (entry.State != EntityState.Added && (tenant.OriginalValue is not Guid original || original != TenantId)))

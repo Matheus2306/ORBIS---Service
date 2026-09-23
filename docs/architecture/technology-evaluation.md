@@ -6,6 +6,7 @@ Fluxo exigido: problema → evidência → alternativas → experimento → medi
 |---|---|---|
 | .NET/ASP.NET/EF 10 | Stack obrigatória; SDK disponível | Adotar, fixar versões, build e testes Release |
 | PostgreSQL 18/Npgsql 10 | Domínio relacional, transações e RLS | Adotar; provar isolamento/grants e baseline |
+| PostgreSQL Serializable/SSI | Último administrador é invariante entre linhas | Adotado só para comandos de membership; snapshots concorrentes testados (ADR-016), custo/aborts sob carga pendentes; sem lock distribuído |
 | Blazor Web App | Três portais e equipe .NET | Candidato SSR+WASM; medir primeiro fluxo contra alternativas |
 | React/TypeScript | Ecossistema UX e independência | Alternativa; não adicionar segunda stack sem experimento |
 | Cache/Redis | Gargalo ainda não observado | Não adotar; sem cache → memória → distribuído após profiling |

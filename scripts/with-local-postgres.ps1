@@ -16,11 +16,13 @@ $psql = Join-Path $PgBin 'psql'
 $databaseName = $(if ($Purpose -eq 'Performance') { 'orbis_perf_' } else { 'orbis_test_' }) + [Guid]::NewGuid().ToString('N')
 $adminPassword = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 $runtimePassword = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+$membershipPassword = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 $previousPassword = $env:PGPASSWORD
 $previousSslMode = $env:PGSSLMODE
 $previousSslRoot = $env:PGSSLROOTCERT
 $previousAdmin = $env:ORBIS_TEST_ADMIN_CONNECTION
 $previousRuntime = $env:ORBIS_TEST_RUNTIME_CONNECTION
+$previousMembership = $env:ORBIS_TEST_MEMBERSHIP_CONNECTION
 $previousDataset = $env:ORBIS_DATASET_CONNECTION
 $started = $false
 $testExitCode = 1
@@ -62,13 +64,14 @@ hostnossl all all 127.0.0.1/32 reject
     $env:PGSSLMODE = 'verify-full'
     $env:PGSSLROOTCERT = $tls.Root
     # O cluster acaba de ser criado; nenhuma base pré-existente é alvo deste script.
-    "CREATE ROLE orbis_runtime LOGIN PASSWORD '$runtimePassword' NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE; CREATE DATABASE $databaseName;" |
+    "CREATE ROLE orbis_runtime LOGIN PASSWORD '$runtimePassword' NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE; CREATE ROLE orbis_membership_admin LOGIN PASSWORD '$membershipPassword' NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE; CREATE DATABASE $databaseName;" |
         & $psql --no-psqlrc --host=127.0.0.1 --port=$Port --username=postgres --dbname=postgres --set=ON_ERROR_STOP=1 --quiet
     if ($LASTEXITCODE -ne 0) { throw 'Test database provisioning failed.' }
     $rootOption = $tls.Root.Replace('"', '""')
     $transport = "SSL Mode=VerifyFull;Root Certificate=`"$rootOption`""
     $env:ORBIS_TEST_ADMIN_CONNECTION = "Host=127.0.0.1;Port=$Port;Database=$databaseName;Username=postgres;Password=$adminPassword;Maximum Pool Size=5;Timeout=5;Command Timeout=10;$transport"
     $env:ORBIS_TEST_RUNTIME_CONNECTION = "Host=127.0.0.1;Port=$Port;Database=$databaseName;Username=orbis_runtime;Password=$runtimePassword;Maximum Pool Size=12;Timeout=5;Command Timeout=10;$transport"
+    $env:ORBIS_TEST_MEMBERSHIP_CONNECTION = "Host=127.0.0.1;Port=$Port;Database=$databaseName;Username=orbis_membership_admin;Password=$membershipPassword;Maximum Pool Size=8;Timeout=10;Command Timeout=10;$transport"
     $env:ORBIS_DATASET_CONNECTION = $env:ORBIS_TEST_ADMIN_CONNECTION
     Push-Location $projectRoot
     try {
@@ -82,6 +85,7 @@ hostnossl all all 127.0.0.1/32 reject
     $env:PGSSLROOTCERT = $previousSslRoot
     $env:ORBIS_TEST_ADMIN_CONNECTION = $previousAdmin
     $env:ORBIS_TEST_RUNTIME_CONNECTION = $previousRuntime
+    $env:ORBIS_TEST_MEMBERSHIP_CONNECTION = $previousMembership
     $env:ORBIS_DATASET_CONNECTION = $previousDataset
     if (Test-Path -LiteralPath $passwordPath) { Remove-Item -LiteralPath $passwordPath }
     if ($started) {

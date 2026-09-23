@@ -12,7 +12,7 @@ public enum DatasetProfile { Uniform, HotTenant }
 
 public sealed record DatasetRecipe
 {
-    public const string GeneratorVersion = "1";
+    public const string GeneratorVersion = "2";
     public const string Issuer = "https://identity.orbis.test";
     public DatasetLevel Level { get; }
     public DatasetProfile Profile { get; }

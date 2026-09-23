@@ -16,6 +16,7 @@ public sealed class RuntimePrivilegeBoundaryTests(DatabaseFixture database)
     [InlineData("column-delegation")]
     [InlineData("missing-read")]
     [InlineData("missing-write")]
+    [InlineData("administrative-history")]
     public async Task CapabilityMatrixRejectsExcessOrMissingGrants(string scenario)
     {
         var (change, restore) = scenario switch
@@ -28,6 +29,7 @@ public sealed class RuntimePrivilegeBoundaryTests(DatabaseFixture database)
             "column-delegation" => ("GRANT SELECT (permissions) ON public.memberships TO orbis_runtime WITH GRANT OPTION", "REVOKE SELECT (permissions) ON public.memberships FROM orbis_runtime"),
             "missing-read" => ("REVOKE SELECT ON directory.users FROM orbis_runtime", "GRANT SELECT ON directory.users TO orbis_runtime"),
             "missing-write" => ("REVOKE INSERT ON public.order_creation_receipts FROM orbis_runtime", "GRANT INSERT ON public.order_creation_receipts TO orbis_runtime"),
+            "administrative-history" => ("GRANT SELECT (actor_id) ON public.membership_access_changes TO orbis_runtime", "REVOKE SELECT (actor_id) ON public.membership_access_changes FROM orbis_runtime"),
             _ => throw new ArgumentException("Unknown grant scenario.", nameof(scenario))
         };
         await using var admin = database.CreateContext(database.TenantA, admin: true);

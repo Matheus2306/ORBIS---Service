@@ -2,13 +2,14 @@
 
 2026-09-22. JWT prova identidade; permissões persistidas e relação com o recurso concedem acesso. Uma persona não é uma claim confiável de role. Todos os endpoints tenant exigem domínio verificado, identidade/vínculo/tenant ativos e validação cruzada de tenant_id quando presente. Nenhuma autoridade vem de IDs no payload. Negar por padrão.
 
-`S`: somente próprio usuário/recurso; `A`: recurso atribuído; `T`: tenant atual conforme permissão explícita; `P`: control plane separado; `—`: negado. As colunas são **perfis candidatos**, não roles implementadas nem grants automáticos. Existem sete flags de ordens e ReadMembers; as demais permissões abaixo são propostas.
+`S`: somente próprio usuário/recurso; `A`: recurso atribuído; `T`: tenant atual conforme permissão explícita; `P`: control plane separado; `—`: negado. As colunas são **perfis candidatos**, não roles implementadas nem grants automáticos. Existem sete flags de ordens, ReadMembers e ManageMembers. A última opera só no núcleo administrativo interno (ADR-016), sem rota ou grant automático. Demais permissões abaixo são propostas.
 
 | Capability | Tenant Admin | Manager | Agent | Customer | Provider | Technician | Platform Admin |
 |---|---|---|---|---|---|---|---|
 | Contexto/me/permissões | S | S | S | S | S | S | — |
 | Tenant settings | T | leitura | — | — | — | — | — |
 | ReadMembers: lista/detalhe de vínculos | T explícito | T delegado | — | — | — | — | — |
+| ManageMembers: permissões/status (núcleo interno) | T limitado às próprias flags | T se concedida explicitamente | — | — | — | — | — |
 | Gerir memberships/roles/convites | T | — | — | — | — | — | — |
 | Clientes: consultar/gerir | T | T | T limitado | S futuro | — | — | — |
 | Prestadores: consultar/gerir | T | T | leitura | — | S limitado | S limitado | — |

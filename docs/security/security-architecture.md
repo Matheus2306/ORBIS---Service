@@ -8,6 +8,8 @@ O [ADR-015](../architecture/adr/ADR-015-administrative-boundary.md) separa a fut
 
 Transporte PostgreSQL: a API exige VerifyFull fora de Development/Testing. O cluster descartável local também exige TLS no servidor e valida cadeia/nome com CA efêmera explícita, sem alterar confiança do sistema. [Configuração e limites locais](../testing/local-postgres-tls.md). Isso não substitui gestão/rotação de certificados de produção nem valida a borda HTTPS pública.
 
+Núcleo de administração de memberships implementado conforme [ADR-016](../architecture/adr/ADR-016-membership-access-transactions.md): delegação limitada, versão, último administrador sob Serializable, audit/recibo transacionais, role dedicada sem ordens/DDL/IDs. Serviços não registrados na API comum; seu guard rejeita até leitura por coluna do histórico administrativo. HTTP, MFA e guard do host administrativo permanecem pendentes. Testes locais não equivalem a revisão operacional da futura credencial.
+
 Configuração: fontes externas sobre defaults não secretos. Testing e Development isolados. Em Production falhar no startup se configuração obrigatória estiver ausente ou insegura. Não habilitar autenticação fake por header em runtime de produção. Proxy headers apenas de remetentes permitidos. Endpoints de health não retornam topologia/segredos. OpenAPI público somente se política decidir; desenvolvimento pode expor contrato.
 
 Observabilidade: trace ID gerado/validado, logs estruturados com IDs mínimos e acesso restrito; tenant ID não é label de alta cardinalidade em todas as métricas. Audit transacional separado de application logs, append-only para runtime, retenção definida antes da release. Exportações são recursos tenant-scoped com expiração e reautorização no download.

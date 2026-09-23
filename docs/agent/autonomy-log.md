@@ -1,5 +1,9 @@
 # Autonomia
 
+## AUT-021 — proteger invariantes entre administradores
+
+Problema: versões por linha não impedem dois administradores de removerem seus acessos simultaneamente. Alternativas: Serializable/SSI, advisory lock por tenant, linha coordenadora; Read Committed com contagem isolada insuficiente. Experimento: dois snapshots sincronizados, disputas de100 comandos, rollback por constraint de audit, chave compartilhada entre alvos e credencial restrita. Decisão: SSI com até três tentativas completas, versões e audit/recibo atomicamente persistidos; sem dependência nova. Evidência:213 testes/12 checks, último administrador preservado, role comum impedida de ler/mutar histórico administrativo. Nenhum resultado convertido em capacidade. Host/MFA/endpoints de escrita ainda não expostos. Intervenção humana: usuário solicitou continuação; decisões técnicas normais seguiram autonomamente.
+
 ## AUT-020 — validar a boundary de credenciais antes de ampliá-la
 
 Problema: administração requer credenciais com mais capacidades; guard atual só verificava parte dos privilégios efetivos. Investigação: documentação PostgreSQL18 e testes negativos reproduziram UPDATE por coluna e SET ROLE transitivo com USAGE=false, ambos aceitos no startup. Decisão: role comum sem memberships, matriz de tabela/coluna com grants necessários/proibidos e rejeição de delegação; não acrescentar credencial administrativa ao processo comum. Resultado: dois regressivos inicialmente falhando, 15 casos focados após correção, depois185 testes/12 checks/26 regras verdes. Nenhum grant produtivo foi alterado; clusters de teste encerrados. Administração planejada em ADR-015, sem alegação de implementação dos comandos. Intervenção humana: retomada solicitada; nenhuma decisão técnica exigiu confirmação.

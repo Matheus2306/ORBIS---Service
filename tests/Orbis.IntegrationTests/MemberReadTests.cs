@@ -42,7 +42,8 @@ public sealed class MemberReadTests(DatabaseFixture database)
         Assert.Equal(HttpStatusCode.OK, detail.StatusCode);
         Assert.True(detail.Headers.CacheControl?.NoStore);
         using var json = await detail.Content.ReadFromJsonAsync<JsonDocument>();
-        Assert.Equal(new[] { "isActive", "permissions", "userId" }, json!.RootElement.EnumerateObject().Select(property => property.Name).Order());
+        Assert.Equal(new[] { "isActive", "permissions", "userId", "version" }, json!.RootElement.EnumerateObject().Select(property => property.Name).Order());
+        Assert.Equal(1, json.RootElement.GetProperty("version").GetInt64());
         Assert.Equal(scope.Users[1], json.RootElement.GetProperty("userId").GetGuid());
         var active = (await client.GetFromJsonAsync<MemberPage>("/v1/members?status=active"))!;
         Assert.Equal(4, active.Items.Count);
@@ -50,6 +51,7 @@ public sealed class MemberReadTests(DatabaseFixture database)
         var suspended = (await client.GetFromJsonAsync<MemberPage>("/v1/members?status=suspended"))!;
         Assert.Equal(scope.Users[^1], Assert.Single(suspended.Items).UserId);
         Assert.False(suspended.Items[0].IsActive);
+        Assert.Equal(2, suspended.Items[0].Version);
         Assert.Null(suspended.NextCursor);
         // Acesso à lista de membros não concede leitura de ordens nem escrita administrativa no banco.
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/v1/work-orders")).StatusCode);

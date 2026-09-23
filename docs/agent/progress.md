@@ -1,5 +1,9 @@
 # Progresso
 
+## 2026-09-23 — núcleo transacional de administração
+
+Implementados ManageMembers, delegação limitada, versionamento, histórico/recibo append-only e transação Serializable com retry limitado. Dois administradores não removem simultaneamente o último acesso; 100 repetições e 100 versões concorrentes preservam efeito único. Role administrativa restrita testada, API comum sem registro/grants para comandos, GETs de membros com version. Migration Small preserva dados e recusa Down destrutivo; receita v2 inclui novo schema. Gate final:213/213 testes,26 regras,12 checks. Relatório2026-09-23-membership-administration-core; ADR-016. Host administrativo, MFA/controllers, performance e produção continuam pendentes.
+
 ## 2026-09-23 — proteger a fronteira antes da administração
 
 Após c3d645d, investigação confirmou duas configurações indevidas aceitas pelo guard: UPDATE por coluna e SET ROLE transitivo sem INHERIT. Testes demonstraram capacidades reais em banco efêmero; nada explorado por HTTP. Guard agora exige role sem memberships, identidade de sessão consistente e matriz de capacidades por tabela/coluna, sem GRANT OPTION ou privilégios extras. Falta de grant necessário também falha fechado. 15 testes focados e gate185/185, 26 regras/12 checks aprovados. ADR-015 escolhe futuro host administrativo separado; nenhum grant, rota ou migration novo. Próximo: implementar essa fronteira e comandos com invariantes transacionais.

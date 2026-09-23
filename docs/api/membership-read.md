@@ -1,11 +1,11 @@
 # Consulta de memberships
 
-2026-09-23. Incremento P0 de leitura, separado de convites/administração ainda não implementados. Um vínculo é identificado pelo par tenant/UserId; `{id}` é o UserId dentro do tenant resolvido pelo host, não ID de um perfil de cliente/prestador.
+2026-09-23. Incremento P0 de leitura com versão para edições condicionais. O [núcleo administrativo](membership-administration.md) existe internamente; seus endpoints e convites ainda estão pendentes. Um vínculo é identificado pelo par tenant/UserId; `{id}` é o UserId dentro do tenant resolvido pelo host, não ID de um perfil de cliente/prestador.
 
 | Operação | Resposta | Regra |
 |---|---|---|
 | GET `/v1/members?limit=25&status=all` | MemberPage: items, nextCursor | máximo 100, status all/active/suspended |
-| GET `/v1/members/{id}` | MemberDetails: userId, isActive, permissions | apenas vínculo no tenant atual |
+| GET `/v1/members/{id}` | MemberDetails: userId, isActive, permissions, version | apenas vínculo no tenant atual |
 
 As duas operações exigem `ReadMembers` (128) persistida em membership ativa, além de JWT válido, claims obrigatórias, tenant/usuário ativos e domínio verificado. Flags de ordens, inclusive ManageOrders, não concedem acesso. Nenhum perfil recebe a nova flag automaticamente; não existe endpoint de concessão neste incremento. `/me` continua disponível para leitura do próprio contexto sem ReadMembers. `isActive` descreve o vínculo, não substitui o status global da conta.
 
@@ -29,4 +29,4 @@ Decisão atual: troca transacional da CHECK validada, `lock_timeout=3s`, `statem
 
 Alternativas: reutilizar ReadAllOrders foi rejeitado por confundir administração de membros com operação de serviços; offset e retorno de contas globais foram rejeitados por custo/escopo. Normalizar todas as permissões em tabelas neste incremento não resolve uma necessidade já medida; reavaliar ao implementar papéis customizáveis. Os nomes das permissões retornados são contrato público e não devem ser renomeados junto com refactors internos.
 
-Referências primárias: [Npgsql: row comparisons](https://www.npgsql.org/efcore/mapping/translations.html#row-value-comparisons), [PostgreSQL: ALTER TABLE e validação de constraints](https://www.postgresql.org/docs/current/sql-altertable.html). Contratos/testes: MembersController, MemberReadTests, MemberCursorTests e DatasetTests. Administração permanece bloqueada até boundary privilegiada, auditoria, proteção do último administrador, idempotência e concorrência próprias.
+Referências primárias: [Npgsql: row comparisons](https://www.npgsql.org/efcore/mapping/translations.html#row-value-comparisons), [PostgreSQL: ALTER TABLE e validação de constraints](https://www.postgresql.org/docs/current/sql-altertable.html). Contratos/testes: MembersController, MemberReadTests, MemberCursorTests e DatasetTests. A evolução AtomicMembershipAccess amplia máscara até511 e acrescenta version; consulte ADR-016. Exposição administrativa ainda depende de processo, audiência, MFA e guard próprios.

@@ -11,5 +11,6 @@ public enum Permission
     ExecuteAssignedOrders = 16,
     CancelOwnOrders = 32,
     ManageOrders = 64,
-    ReadMembers = 128
+    ReadMembers = 128,
+    ManageMembers = 256
 }

@@ -58,6 +58,7 @@ public sealed class DatasetTests(ITestOutputHelper output) : IAsyncLifetime
         await using var context = new TenantDbContext(Options(connectionString), new(recipe.TenantId(0)));
         var migrator = context.GetService<IMigrator>();
         const string previous = "20260918112051_AtomicOrderTransitions";
+        const string tested = "20260923165133_ReadMemberPermission";
         await migrator.MigrateAsync(previous);
         var before = await MembershipDigest();
         await using (var blocker = new NpgsqlConnection(connectionString))
@@ -66,12 +67,12 @@ public sealed class DatasetTests(ITestOutputHelper output) : IAsyncLifetime
             await using var transaction = await blocker.BeginTransactionAsync();
             await using var command = new NpgsqlCommand("LOCK TABLE memberships IN ROW SHARE MODE", blocker, transaction);
             await command.ExecuteNonQueryAsync();
-            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => migrator.MigrateAsync());
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => migrator.MigrateAsync(tested));
             Assert.Equal(PostgresErrorCodes.LockNotAvailable, Assert.IsType<PostgresException>(error.InnerException).SqlState);
         }
         Assert.Equal(previous, (await context.Database.GetAppliedMigrationsAsync()).Last());
         var timer = Stopwatch.StartNew();
-        await migrator.MigrateAsync();
+        await migrator.MigrateAsync(tested);
         timer.Stop();
         output.WriteLine($"ReadMemberPermission migration, Small 1,050 memberships / 10,000 orders: {timer.Elapsed.TotalMilliseconds:F3} ms. Local DDL timing, not HTTP capacity.");
         Assert.Equal(before, await MembershipDigest());
@@ -105,6 +106,60 @@ public sealed class DatasetTests(ITestOutputHelper output) : IAsyncLifetime
     [InlineData("Host=127.0.0.1;Database=orbis_perf_a-b")]
     public void UnsafeDestinationsAreRejectedBeforeConnection(string connection) =>
         Assert.Throws<InvalidOperationException>(() => DatasetImporter.ValidateDestination(connection));
+
+    [Fact]
+    public async Task MembershipAccessMigrationPreservesSmallDataAndRefusesDestructiveDown()
+    {
+        var connection = await NewDatabaseAsync();
+        var recipe = new DatasetRecipe(DatasetLevel.Small, DatasetProfile.Uniform, 42);
+        var generated = await DatasetImporter.ImportAsync(connection, recipe);
+        Assert.Equal("2", generated.GeneratorVersion);
+        Assert.Equal(0, generated.Tables.Single(t => t.Table == "public.membership_access_changes").Rows);
+        await using var context = new TenantDbContext(Options(connection), new(recipe.TenantId(0)));
+        var migrator = context.GetService<IMigrator>();
+        const string previous = "20260923165133_ReadMemberPermission";
+        await migrator.MigrateAsync(previous);
+        var before = await Digest();
+        await using (var blocker = new NpgsqlConnection(connection))
+        {
+            await blocker.OpenAsync();
+            await using var transaction = await blocker.BeginTransactionAsync();
+            await using var command = new NpgsqlCommand("LOCK TABLE memberships IN ROW SHARE MODE", blocker, transaction);
+            await command.ExecuteNonQueryAsync();
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => migrator.MigrateAsync());
+            Assert.Equal(PostgresErrorCodes.LockNotAvailable, Assert.IsType<PostgresException>(error.InnerException).SqlState);
+        }
+        Assert.Equal(previous, (await context.Database.GetAppliedMigrationsAsync()).Last());
+        var watch = Stopwatch.StartNew();
+        await migrator.MigrateAsync();
+        watch.Stop();
+        output.WriteLine($"AtomicMembershipAccess migration, Small 1,050 memberships / 10,000 orders: {watch.Elapsed.TotalMilliseconds:F3} ms. Single local DDL sample, not capacity.");
+        Assert.Equal(before, await Digest());
+        Assert.Equal(1_050, await context.Memberships.IgnoreQueryFilters().CountAsync(m => m.Version == 1 && (m.Permissions & Orbis.Domain.Identity.Permission.ManageMembers) == 0));
+        Assert.Equal(10_000, await context.WorkOrders.IgnoreQueryFilters().CountAsync());
+        var invalid = await Assert.ThrowsAsync<PostgresException>(() => context.Database.ExecuteSqlRawAsync("UPDATE memberships SET permissions=512"));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, invalid.SqlState);
+        invalid = await Assert.ThrowsAsync<PostgresException>(() => context.Database.ExecuteSqlRawAsync("UPDATE memberships SET version=0"));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, invalid.SqlState);
+        foreach (var update in new[] { "UPDATE memberships SET permissions=256", "UPDATE memberships SET version=2" })
+        {
+            await context.Database.ExecuteSqlRawAsync(update);
+            var rejected = await Assert.ThrowsAsync<PostgresException>(() => migrator.MigrateAsync(previous));
+            Assert.Equal(PostgresErrorCodes.CheckViolation, rejected.SqlState);
+            Assert.EndsWith("_AtomicMembershipAccess", (await context.Database.GetAppliedMigrationsAsync()).Last(), StringComparison.Ordinal);
+            await context.Database.ExecuteSqlRawAsync("UPDATE memberships SET permissions=0,version=1");
+        }
+        await context.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO membership_access_changes (tenant_id,actor_id,key,member_id,fingerprint,previous_permissions,previous_is_active,previous_version,permissions,is_active,version,occurred_at)
+            VALUES ({recipe.TenantId(0)},{recipe.UserId(0, 0)},{Guid.NewGuid()},{recipe.UserId(0, 1)},{new string('A', 64)},0,true,1,0,false,2,{DateTimeOffset.UnixEpoch})
+            """);
+        Assert.Equal(PostgresErrorCodes.CheckViolation, (await Assert.ThrowsAsync<PostgresException>(() => migrator.MigrateAsync(previous))).SqlState);
+        Assert.Equal(1, await context.MembershipAccessChanges.IgnoreQueryFilters().CountAsync());
+
+        Task<string> Digest() => context.Database.SqlQueryRaw<string>("""
+            SELECT md5(string_agg(tenant_id::text || user_id::text || permissions::text || is_active::text, ',' ORDER BY tenant_id,user_id)) AS "Value" FROM memberships
+            """).SingleAsync();
+    }
 
     [Fact]
     public void RecipeIsStableAcrossCulturesAndHasRealisticIdentityAndTimeDistribution()

@@ -32,16 +32,18 @@ public sealed class DatabaseFixture : IAsyncLifetime
     public Guid OtherOrderA { get; private set; }
     public Guid MultiTenantOrderB { get; private set; }
     public string RuntimeConnection { get; private set; } = string.Empty;
+    public string MembershipConnection { get; private set; } = string.Empty;
     private string AdminConnection { get; set; } = string.Empty;
 
     public async Task InitializeAsync()
     {
         AdminConnection = RequiredConnection("ORBIS_TEST_ADMIN_CONNECTION");
         RuntimeConnection = RequiredConnection("ORBIS_TEST_RUNTIME_CONNECTION");
+        MembershipConnection = RequiredConnection("ORBIS_TEST_MEMBERSHIP_CONNECTION");
         await using var admin = CreateContext(TenantA, admin: true);
         // Exercita a evolução de uma versão já populada, sem resetar nem apagar o legado.
         await admin.GetService<IMigrator>().MigrateAsync("20260917130050_InitialTenantBoundary");
-        var legacyOrder = await SeedAsync(LegacyTenant, LegacyUser);
+        var legacyOrder = await SeedAsync(LegacyTenant, LegacyUser, legacy: true);
         await using var directory = CreateDirectoryContext(admin: true);
         await directory.Database.MigrateAsync();
         await admin.GetService<IMigrator>().MigrateAsync("20260917171204_AtomicOrderCreation");
@@ -53,6 +55,7 @@ public sealed class DatabaseFixture : IAsyncLifetime
         await admin.Database.MigrateAsync();
         // Esta credencial privilegiada existe apenas no fixture; a API não recebe acesso DDL.
         await admin.Database.ExecuteSqlRawAsync(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "runtime-grants.sql")));
+        await admin.Database.ExecuteSqlRawAsync(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "membership-administration-grants.sql")));
         foreach (var (id, host) in new[] { (TenantA, HostA), (TenantB, HostB) })
         {
             var tenant = new Tenant(id, "Synthetic tenant");
@@ -83,11 +86,15 @@ public sealed class DatabaseFixture : IAsyncLifetime
                 options => options.MigrationsHistoryTable("__DirectoryMigrationsHistory", "directory"))
             .Options);
 
-    private async Task<Guid> SeedAsync(Guid tenantId, Guid userId, Permission permissions = Permission.ReadOwnOrders | Permission.CreateOrders)
+    private async Task<Guid> SeedAsync(Guid tenantId, Guid userId, Permission permissions = Permission.ReadOwnOrders | Permission.CreateOrders, bool legacy = false)
     {
         await using var context = CreateContext(tenantId, admin: true);
         await using var transaction = await context.BeginTenantTransactionAsync();
-        context.Memberships.Add(new Membership(tenantId, userId, permissions));
+        // O legado antecede version; não usar o modelo atual para materializar uma coluna que ainda não existe.
+        if (legacy)
+            await context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO memberships (tenant_id,user_id,permissions,is_active) VALUES ({tenantId},{userId},{(int)permissions},true)");
+        else
+            context.Memberships.Add(new Membership(tenantId, userId, permissions));
         var order = WorkOrder.Request(tenantId, userId, "Synthetic private order", DateTimeOffset.UnixEpoch);
         context.WorkOrders.Add(order);
         await context.SaveChangesAsync();

@@ -15,8 +15,8 @@ public sealed class MemberReader(DbContextOptions<TenantDbContext> options) : IM
         await using var transaction = await database.BeginTenantTransactionAsync(cancellationToken);
         if (!await CanReadAsync(database, actor.UserId, cancellationToken)) return null;
         var member = await database.Memberships.AsNoTracking().Where(member => member.UserId == userId)
-            .Select(member => new { member.UserId, member.IsActive, member.Permissions }).SingleOrDefaultAsync(cancellationToken);
-        return member is null ? null : new(member.UserId, member.IsActive, PermissionNames.From(member.Permissions));
+            .Select(member => new { member.UserId, member.IsActive, member.Permissions, member.Version }).SingleOrDefaultAsync(cancellationToken);
+        return member is null ? null : new(member.UserId, member.IsActive, PermissionNames.From(member.Permissions), member.Version);
     }
 
     public async Task<MemberBatch?> ListAsync(TenantUser actor, int limit, Guid? afterUserId, MemberStatusFilter status, CancellationToken cancellationToken)
@@ -31,8 +31,8 @@ public sealed class MemberReader(DbContextOptions<TenantDbContext> options) : IM
             query = query.Where(member => EF.Functions.GreaterThan(ValueTuple.Create(member.UserId), ValueTuple.Create(afterUserId.Value)));
         // A PK (tenant_id,user_id) fornece ordem estável; buscar só limit+1, sem COUNT/offset ou dados do diretório global.
         var rows = await query.OrderBy(member => member.UserId).Take(limit + 1)
-            .Select(member => new { member.UserId, member.IsActive, member.Permissions }).ToListAsync(cancellationToken);
-        return new(rows.Take(limit).Select(member => new MemberDetails(member.UserId, member.IsActive, PermissionNames.From(member.Permissions))).ToArray(),
+            .Select(member => new { member.UserId, member.IsActive, member.Permissions, member.Version }).ToListAsync(cancellationToken);
+        return new(rows.Take(limit).Select(member => new MemberDetails(member.UserId, member.IsActive, PermissionNames.From(member.Permissions), member.Version)).ToArray(),
             rows.Count > limit);
     }
 

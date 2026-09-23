@@ -27,6 +27,8 @@ Não publicar endpoint de métricas no portal ou disponibilizar acesso a tenants
 
 ## Coleta para a próxima medição
 
+O núcleo administrativo emite Meter `Orbis.MembershipAdministration`: counter `orbis.membership.transaction_retries` por nova tentativa após abort, sem atributos; `orbis.membership.access_changes` por resultado retornado, com único atributo `outcome` limitado aos seis valores do enum. IDs, chaves, payloads e credenciais não são emitidos. Teste com conflitos reais captura retry; exportação/alertas e medição de overhead continuam pendentes. Como ainda não há host administrativo, esses sinais não constituem SLI HTTP.
+
 O teste usa MeterListener em memória, delimita a instância HTTP pelo IMeterFactory e o pool pelo nome fixo. O listener existe somente nos testes; não conserva amostras por request no processo de produção. Não calcula percentis de poucas requisições nem atribui RPS.
 
 O baseline deverá separar processo da API e gerador e coletar System.Runtime + Hosting + Kestrel + Npgsql, incluindo CPU/RAM/rede/disco do host e do PostgreSQL. PG connections/locks/query time/WAL/vacuum precisam de coleta própria; o driver não informa CPU ou I/O do servidor. Gerador saturado invalida a conclusão de capacidade. Sincronizar relógios e correlacionar run/commit/dataset/configuração.

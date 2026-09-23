@@ -1,6 +1,6 @@
 # ADR-015 — fronteira de administração e privilégios efetivos
 
-2026-09-23. Status: contrato de isolamento adotado; guard do runtime implementado neste incremento. Host/credencial administrativos e comandos ainda planejados, sem endpoints vazios.
+2026-09-23. Status: contrato de isolamento e guard do runtime adotados. Núcleo de comandos e grants dedicados implementados no [ADR-016](ADR-016-membership-access-transactions.md); host/credencial operacional/audiência/MFA administrativos continuam pendentes.
 
 ## Problema, contexto e requisitos
 

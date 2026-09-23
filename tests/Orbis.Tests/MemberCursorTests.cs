@@ -27,7 +27,7 @@ public sealed class MemberCursorTests
         Assert.False(member.Allows(Permission.ManageOrders));
         Assert.Equal(new[] { "ReadMembers" }, PermissionNames.From(member.Permissions));
         Assert.Empty(PermissionNames.From(Permission.None));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new Membership(member.TenantId, member.UserId, (Permission)256));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Membership(member.TenantId, member.UserId, (Permission)512));
         member.Suspend();
         Assert.False(member.Allows(Permission.ReadMembers));
     }

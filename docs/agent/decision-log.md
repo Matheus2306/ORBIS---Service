@@ -2,6 +2,8 @@
 
 | Data | Decisão | Evidência / consequência |
 |---|---|---|
+| 2026-09-23 | Serializable + versão + audit/recibo para administração de vínculos | ADR-016;213 testes/12 checks; último admin preservado entre snapshots concorrentes, role dedicada e serviços ausentes da API comum; HTTP/MFA ainda pendentes |
+| 2026-09-23 | Receita sintética v2 inclui versão/histórico administrativo | Duas importações de cada perfil com conteúdo idêntico; sem concessão automática; IDs/hashes/evidências v1 não são baseline comparável |
 | 2026-09-23 | Role comum sem memberships e matriz de grants por tabela/coluna | Dois bypasses de configuração reproduzidos, depois15 casos focados e185 testes verdes; futuro host administrativo separado no ADR-015 |
 | 2026-09-23 | ReadMembers separada de flags de ordens; seek sem enumeração global | 19 cenários de integração de membros, cursor/contratos; migration Small preserva flags, Down recusa perda; 175 testes verdes |
 | 2026-09-23 | Encerrar pools dos bancos sintéticos ao fim de cada teste | Falhas SQLSTATE53300 no gate inicial; medição 8→0/2→0 após limpeza por proprietário; limite40 e pooling da API mantidos |

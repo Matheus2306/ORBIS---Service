@@ -34,6 +34,8 @@ A API expõe detalhe/lista autenticados, criação idempotente e atribuição/ac
 
 Também estão implementados o [contexto atual](docs/api/current-context.md) e a [consulta de membros](docs/api/membership-read.md), com permissão ReadMembers, paginação e filtros. O [catálogo](docs/api/endpoint-catalog.md) distingue as 16 operações existentes das capacidades ainda planejadas.
 
+O [núcleo administrativo de memberships](docs/api/membership-administration.md) valida delegação, versão, último administrador e audit/recibo atômicos em PostgreSQL. Consultas incluem `version`; endpoints de escrita dependem do host administrativo separado e MFA. [Gate atual:213 testes/12 checks](docs/testing/reports/2026-09-23-membership-administration-core.md), sem validação de capacidade ou produção.
+
 As rotas de negócio estão organizadas em controllers de ordens e transições, com contratos em `src/Orbis.Api/Contracts`. Health checks e OpenAPI mantêm os componentes nativos. A expansão está registrada na [auditoria de lacunas](docs/api/api-gap-analysis.md), [matriz de 31 domínios](docs/api/domain-capability-matrix.md), [catálogo de operações](docs/api/endpoint-catalog.md) e [matriz de autorização](docs/security/authorization-matrix.md). Rotas planejadas não estão disponíveis no servidor.
 
 O [gerador sintético](docs/database/dataset-plan.md) prepara Small com 1.000 usuários, 50 tenants e 10.000 ordens, perfis uniforme/concentrado e manifesto de hashes/contagens reais. Execute `./scripts/generate-dataset.ps1` após build Release. Número de registros não é capacidade de usuários simultâneos; nenhum RPS/p95/p99 da API foi validado.

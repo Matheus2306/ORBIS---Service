@@ -5,7 +5,7 @@ using Orbis.Application.Tenancy;
 namespace Orbis.Application.Memberships;
 
 public enum MemberStatusFilter { All, Active, Suspended }
-public sealed record MemberDetails(Guid UserId, bool IsActive, IReadOnlyList<string> Permissions);
+public sealed record MemberDetails(Guid UserId, bool IsActive, IReadOnlyList<string> Permissions, long Version);
 public sealed record MemberBatch(IReadOnlyList<MemberDetails> Items, bool HasMore);
 public sealed record MemberPage(IReadOnlyList<MemberDetails> Items, string? NextCursor);
 public enum ListMembersOutcome { Found, Invalid, Denied }
