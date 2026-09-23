@@ -1,5 +1,9 @@
 # Progresso
 
+## 2026-09-23 — proteger a fronteira antes da administração
+
+Após c3d645d, investigação confirmou duas configurações indevidas aceitas pelo guard: UPDATE por coluna e SET ROLE transitivo sem INHERIT. Testes demonstraram capacidades reais em banco efêmero; nada explorado por HTTP. Guard agora exige role sem memberships, identidade de sessão consistente e matriz de capacidades por tabela/coluna, sem GRANT OPTION ou privilégios extras. Falta de grant necessário também falha fechado. 15 testes focados e gate185/185, 26 regras/12 checks aprovados. ADR-015 escolhe futuro host administrativo separado; nenhum grant, rota ou migration novo. Próximo: implementar essa fronteira e comandos com invariantes transacionais.
+
 ## 2026-09-23 — leitura administrativa de memberships
 
 Commit de contexto 1876cd7 concluído após retomada. Lista/detalhe de membros com ReadMembers, cursor tenant/ator/status, projeção mínima e no-store. Migration testada em Small preserva dados e limita DDL; Down recusa perder bit128. Primeiro gate reprovado por asserção de exceção encapsulada e pools ociosos acumulados em bancos do harness; corrigidos sem aumentar max_connections. 30 testes focados e gate final com 175 testes/12 checks/26 regras aprovados; pools comprovadamente zerados por teste. 16 operações implementadas, baseline produtivo ainda incompleto. Próximo: fronteira administrativa antes de convites/gestão.

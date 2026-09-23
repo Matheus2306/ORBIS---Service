@@ -1,4 +1,6 @@
 -- Executar com o proprietário após migrations; o runtime nunca pode conceder privilégios a si mesmo.
+-- Role de propósito único, sem memberships ou GRANT OPTION. Não compartilhar credencial com administração (ADR-015).
+-- Este bootstrap não revoga grants extras pré-existentes por tabela/coluna/role: investigar drift rejeitado pelo guard.
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT USAGE ON SCHEMA public TO orbis_runtime;
 GRANT SELECT ON memberships TO orbis_runtime;

@@ -6,7 +6,7 @@
 | Runtime ASP.NET | 10.0.10 | `dotnet --info` |
 | PostgreSQL | 18.6 | binário local `postgres --version` |
 | Build Release | 0 warnings, 0 errors | .NET build da solução |
-| Testes | 175/175 aprovados; 0 ignorados | docs/testing/reports/2026-09-23-membership-read.md |
+| Testes | 185/185 aprovados; 0 ignorados | docs/testing/reports/2026-09-23-runtime-privilege-boundary.md |
 | Gerador externo | Vegeta 12.13.0-orbis.1; build idêntico/auditado, 7 casos de transporte | 8 requests funcionais; nenhum baseline/RPS validado |
 | Métricas nativas | HTTP/TLS/conexões/pool emitidos; atributos controlados | NativeMetricsExposeBoundedRoutesAndPoolWithoutRequestData; sem baseline nem coletor externo |
 | Transporte HTTPS | HTTP/1.1 e HTTP/2 reais, CA alheia/nome errado negados | Kestrel em Performance; autenticação/isolamento/replay mantidos, sem carga |
@@ -18,7 +18,8 @@
 | Conclusão concorrente | 100 mesmas chaves → 1 efeito/99 replays; 100 chaves distintas → 1 efeito/99 conflitos | OrderTransitionTests; não é benchmark |
 | Secret scanning | sem leaks | Gitleaks 8.30.1, working tree, defaults, redaction |
 | Formatação | aprovada | dotnet format --verify-no-changes |
-| Gate local | 12 checks aprovados, 175 testes + 26 casos das regras | docs/testing/reports/2026-09-23-membership-read.md; CI remoto não executado |
+| Gate local | 12 checks aprovados, 185 testes + 26 casos das regras | docs/testing/reports/2026-09-23-runtime-privilege-boundary.md; CI remoto não executado |
+| Privilégios do runtime | grant por coluna e SET ROLE transitivo antes aceitos, agora startup rejeitado | dois regressivos reproduzidos; 15 testes focados; política sem memberships/GRANT OPTION, matriz de 9 tabelas |
 | API | 111 operações catalogadas; 16 implementadas; 13 de negócio em controllers | 31 domínios planejados; nenhum baseline de domínio completo; sem carga HTTP |
 | Migration ReadMembers | Small: 27,808 ms, uma amostra no gate; conteúdo preservado; lock/Down recusados atomicamente | relatório 2026-09-23-membership-read; não mede API nem volumes maiores |
 | Pools de dataset | 2→0 e 8→0 sessões por teste; max_connections=40 preservado | observação pg_stat_activity; evita acúmulo entre bancos descartáveis |

@@ -1,5 +1,9 @@
 # Autonomia
 
+## AUT-020 — validar a boundary de credenciais antes de ampliá-la
+
+Problema: administração requer credenciais com mais capacidades; guard atual só verificava parte dos privilégios efetivos. Investigação: documentação PostgreSQL18 e testes negativos reproduziram UPDATE por coluna e SET ROLE transitivo com USAGE=false, ambos aceitos no startup. Decisão: role comum sem memberships, matriz de tabela/coluna com grants necessários/proibidos e rejeição de delegação; não acrescentar credencial administrativa ao processo comum. Resultado: dois regressivos inicialmente falhando, 15 casos focados após correção, depois185 testes/12 checks/26 regras verdes. Nenhum grant produtivo foi alterado; clusters de teste encerrados. Administração planejada em ADR-015, sem alegação de implementação dos comandos. Intervenção humana: retomada solicitada; nenhuma decisão técnica exigiu confirmação.
+
 ## AUT-019 — consulta de membros e orçamento real de conexões do harness
 
 Problema: administração não possuía consulta segura de vínculos. Decisão: ReadMembers explícita, DTO local mínimo, seek vinculado a tenant/ator/status, sem grants de escrita ou privilégios herdados de ordens. Migration Small com lock/statement timeouts e Down que falha sem descartar flags. Experimento: primeira suíte encontrou wrapping de SQLSTATE55P03 e esgotamento53300 por pools por banco sintético. Corrigida asserção exata; pools pertencentes a cada teste são encerrados e pg_stat_activity exige zero sessões restantes. Não elevar max_connections. Evidência: 30 testes focados, depois175/175, 26 regras e12 checks; 8→0/2→0 conexões; migration27,808ms no ensaio final, sem alegação de escala. Intervenção humana: retomada solicitada; nenhuma decisão técnica normal exigiu confirmação.
