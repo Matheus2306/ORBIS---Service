@@ -4,7 +4,7 @@ public sealed class Membership
 {
     private const Permission KnownPermissions = Permission.ReadOwnOrders | Permission.ReadAllOrders |
         Permission.CreateOrders | Permission.AssignOrders | Permission.ExecuteAssignedOrders |
-        Permission.CancelOwnOrders | Permission.ManageOrders;
+        Permission.CancelOwnOrders | Permission.ManageOrders | Permission.ReadMembers;
 
     public Guid TenantId { get; private set; }
     public Guid UserId { get; private set; }

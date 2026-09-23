@@ -4,6 +4,7 @@
 |---|---:|---:|---:|---:|---|
 | Detalhe de ordem | 300 ms | 800 ms | 1.000 ms | 2.000 ms | DTO sem anexos embutidos |
 | Lista de ordens | 300 ms | 800 ms | 1.000 ms | 2.000 ms | keyset; default 25, máximo 100 |
+| Lista/detalhe de membros | 300 ms | 800 ms | 1.000 ms | 2.000 ms | ReadMembers; keyset até 100; filtro de status; sem COUNT/global directory na projeção |
 | Contexto /me, /me/permissions e /tenant | 300 ms | 800 ms | 1.000 ms | 2.000 ms | DTO mínimo; três leituras limitadas; uma conexão por vez |
 | Criar solicitação/ordem | 500 ms | 1.200 ms | 1.000 ms | 2.000 ms | body até 32 KiB; idempotência |
 | Aceitar/iniciar/concluir | 500 ms | 1.200 ms | 1.000 ms | 2.000 ms | versão e conflito explícitos |

@@ -1,5 +1,8 @@
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using Orbis.Application.Tenancy;
 using Orbis.Application.WorkOrders;
@@ -8,12 +11,92 @@ using Orbis.Domain.WorkOrders;
 using Orbis.Infrastructure.Persistence;
 using Orbis.Infrastructure.Queries;
 using Orbis.QueryProbe;
+using Xunit.Abstractions;
 
 namespace Orbis.IntegrationTests;
 
 [Collection("Database")]
-public sealed class DatasetTests
+public sealed class DatasetTests(ITestOutputHelper output) : IAsyncLifetime
 {
+    private readonly List<string> temporaryConnections = [];
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public async Task DisposeAsync()
+    {
+        if (temporaryConnections.Count == 0) return;
+        var names = temporaryConnections.Select(connection => new NpgsqlConnectionStringBuilder(connection).Database!).Distinct().ToArray();
+        var observerSettings = new NpgsqlConnectionStringBuilder(Environment.GetEnvironmentVariable("ORBIS_TEST_ADMIN_CONNECTION")!) { Pooling = false };
+        await using var observer = new NpgsqlConnection(observerSettings.ConnectionString);
+        await observer.OpenAsync();
+        await using var count = new NpgsqlCommand("SELECT count(*) FROM pg_stat_activity WHERE datname = ANY (@databases)", observer);
+        count.Parameters.AddWithValue("databases", names);
+        var before = (long)(await count.ExecuteScalarAsync())!;
+        // Cada base descartável tem pools próprios; encerrar só os deste teste preserva testes reais de pooling da API.
+        foreach (var connectionString in temporaryConnections.Distinct(StringComparer.Ordinal))
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+            NpgsqlConnection.ClearPool(connection);
+        }
+        long remaining = before;
+        for (var attempt = 0; attempt < 40; attempt++)
+        {
+            remaining = (long)(await count.ExecuteScalarAsync())!;
+            if (remaining == 0) break;
+            await Task.Delay(50);
+        }
+        output.WriteLine($"Temporary database connections before/after owned pool cleanup: {before}/{remaining} across {names.Length} databases.");
+        Assert.Equal(0, remaining);
+    }
+
+    [Fact]
+    public async Task MemberPermissionMigrationPreservesSmallDatasetBoundsLockWaitAndRejectsLossyRollback()
+    {
+        var connectionString = await NewDatabaseAsync();
+        var recipe = new DatasetRecipe(DatasetLevel.Small, DatasetProfile.Uniform, 42);
+        await DatasetImporter.ImportAsync(connectionString, recipe);
+        await using var context = new TenantDbContext(Options(connectionString), new(recipe.TenantId(0)));
+        var migrator = context.GetService<IMigrator>();
+        const string previous = "20260918112051_AtomicOrderTransitions";
+        await migrator.MigrateAsync(previous);
+        var before = await MembershipDigest();
+        await using (var blocker = new NpgsqlConnection(connectionString))
+        {
+            await blocker.OpenAsync();
+            await using var transaction = await blocker.BeginTransactionAsync();
+            await using var command = new NpgsqlCommand("LOCK TABLE memberships IN ROW SHARE MODE", blocker, transaction);
+            await command.ExecuteNonQueryAsync();
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => migrator.MigrateAsync());
+            Assert.Equal(PostgresErrorCodes.LockNotAvailable, Assert.IsType<PostgresException>(error.InnerException).SqlState);
+        }
+        Assert.Equal(previous, (await context.Database.GetAppliedMigrationsAsync()).Last());
+        var timer = Stopwatch.StartNew();
+        await migrator.MigrateAsync();
+        timer.Stop();
+        output.WriteLine($"ReadMemberPermission migration, Small 1,050 memberships / 10,000 orders: {timer.Elapsed.TotalMilliseconds:F3} ms. Local DDL timing, not HTTP capacity.");
+        Assert.Equal(before, await MembershipDigest());
+        Assert.Equal(10_000, await context.WorkOrders.IgnoreQueryFilters().CountAsync());
+        Assert.Equal(1_050, await context.Memberships.IgnoreQueryFilters().CountAsync());
+        Assert.Equal(0, await context.Memberships.IgnoreQueryFilters().CountAsync(member => ((int)member.Permissions & 128) != 0));
+        var invalid = await Assert.ThrowsAsync<PostgresException>(() => context.Database.ExecuteSqlRawAsync("UPDATE memberships SET permissions=256"));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, invalid.SqlState);
+        await context.Database.ExecuteSqlInterpolatedAsync($"UPDATE memberships SET permissions=128 WHERE tenant_id={recipe.TenantId(0)} AND user_id={recipe.UserId(0, 0)}");
+        var rollback = await Assert.ThrowsAsync<PostgresException>(() => migrator.MigrateAsync(previous));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, rollback.SqlState);
+        // O Down rejeitado mantém tanto a migration aplicada quanto o grant persistido e a nova constraint válida.
+        Assert.EndsWith("_ReadMemberPermission", (await context.Database.GetAppliedMigrationsAsync()).Last(), StringComparison.Ordinal);
+        Assert.Equal(128, await context.Memberships.IgnoreQueryFilters()
+            .Where(member => member.TenantId == recipe.TenantId(0) && member.UserId == recipe.UserId(0, 0))
+            .Select(member => (int)member.Permissions).SingleAsync());
+        await context.Database.ExecuteSqlInterpolatedAsync($"UPDATE memberships SET permissions=255 WHERE tenant_id={recipe.TenantId(0)} AND user_id={recipe.UserId(0, 0)}");
+        var after = await Assert.ThrowsAsync<PostgresException>(() => context.Database.ExecuteSqlRawAsync("UPDATE memberships SET permissions=256"));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, after.SqlState);
+
+        async Task<string> MembershipDigest() => await context.Database.SqlQueryRaw<string>("""
+            SELECT md5(string_agg(tenant_id::text || user_id::text || permissions::text || is_active::text, ',' ORDER BY tenant_id,user_id)) AS "Value" FROM memberships
+            """).SingleAsync();
+    }
+
     [Theory]
     [InlineData("Host=example.com;Database=orbis_perf_safe")]
     [InlineData("Host=localhost;Database=orbis_perf_safe")]
@@ -106,13 +189,14 @@ public sealed class DatasetTests
         Assert.Equal(0, await directory.Tenants.CountAsync());
     }
 
-    private static async Task VerifyReplayAndRlsAsync(string admin, DatasetRecipe recipe)
+    private async Task VerifyReplayAndRlsAsync(string admin, DatasetRecipe recipe)
     {
         await using var connection = new NpgsqlConnection(admin);
         await connection.OpenAsync();
         await using var grants = new NpgsqlCommand(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "runtime-grants.sql")), connection);
         await grants.ExecuteNonQueryAsync();
         var runtime = new NpgsqlConnectionStringBuilder(Environment.GetEnvironmentVariable("ORBIS_TEST_RUNTIME_CONNECTION")!) { Database = connection.Database }.ConnectionString;
+        temporaryConnections.Add(runtime);
         var options = Options(runtime);
         await using var directory = DirectoryContext(runtime);
         var resolver = new ResolveTenantUser(new TenantDirectory(directory));
@@ -142,7 +226,7 @@ public sealed class DatasetTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => QueryPlanProbe.CaptureAsync(admin, recipe, 2));
     }
 
-    private static async Task<string> NewDatabaseAsync()
+    private async Task<string> NewDatabaseAsync()
     {
         var settings = new NpgsqlConnectionStringBuilder(Environment.GetEnvironmentVariable("ORBIS_TEST_ADMIN_CONNECTION")!);
         DatasetImporter.ValidateDestination(settings.ConnectionString);
@@ -153,6 +237,7 @@ public sealed class DatasetTests
         await using var command = new NpgsqlCommand($"CREATE DATABASE \"{name}\"", connection);
         await command.ExecuteNonQueryAsync();
         settings.Database = name;
+        temporaryConnections.Add(settings.ConnectionString);
         return settings.ConnectionString;
     }
 

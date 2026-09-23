@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Orbis.Application.Identity;
 using Orbis.Application.Tenancy;
-using Orbis.Domain.Identity;
 
 namespace Orbis.Api.Controllers;
 
@@ -31,8 +31,6 @@ public sealed class CurrentUserController(ReadCurrentContext read) : ControllerB
         var context = await read.ExecuteAsync(request, cancellationToken);
         if (context is null) return Results.NotFound();
         // A resposta orienta a UI; comandos continuam revalidando as permissões persistidas em cada acesso.
-        var names = Enum.GetValues<Permission>().Where(permission => permission != Permission.None &&
-            (context.Permissions & permission) == permission).Select(permission => permission.ToString()).ToArray();
-        return Results.Ok(new CurrentPermissions(context.TenantId, context.UserId, names));
+        return Results.Ok(new CurrentPermissions(context.TenantId, context.UserId, PermissionNames.From(context.Permissions)));
     }
 }

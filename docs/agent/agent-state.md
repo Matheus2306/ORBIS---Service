@@ -2,27 +2,27 @@
 
 - Projeto: ORBIS SERVICE
 - PROJECT_ROOT: C:\Users\Usuario\ORBIS - Service
-- Data: 2026-09-22
+- Data: 2026-09-23
 - Fase: expansão funcional da API; auditoria/catálogo e controllers concluídos; baseline funcional pendente
 - Branch: main
-- Último commit anterior ao incremento atual: e99b874; revisão corrente em `git log -1`
+- Último commit anterior ao incremento atual: 1876cd7; revisão corrente em `git log -1`
 - Build: Release aprovado, 0 warnings/0 errors
-- Testes: 153 aprovados, 0 falhas/ignorados (25 domínio/arquitetura/cursor + 128 integração); 26 casos das regras e 12 checks do gate
+- Testes: 175 aprovados, 0 falhas/ignorados (27 domínio/arquitetura/cursor + 148 integração); 26 casos das regras e 12 checks do gate
 - Performance baseline HTTP: inexistente; planos SQL Small instrumentados em reports/2026-09-18-small-query-plans.md
 - Maior carga validada: nenhuma
 - RPS validado / p95 / p99 / error rate: não medidos
 - Arquitetura: monólito modular; PostgreSQL compartilhado com RLS; ADRs iniciais
 - Tecnologias: .NET SDK 10.0.302; runtime 10.0.10; PostgreSQL local 18.6; Git 2.54.0
 - Tecnologias rejeitadas por ora: Redis, brokers, Kubernetes, microservices, motor de busca externo
-- Tarefa atual: contexto atual de identidade/tenant/permissões implementado e validado; relatório 2026-09-22-current-context
+- Tarefa atual: consulta de membros implementada e validada; relatório 2026-09-23-membership-read; migração Small e liberação de pools do harness comprovadas
 - Problemas: Docker ausente; acesso de rede do shell exige elevação; infraestrutura de produção não contratada
-- Próxima ação: consultar memberships com permissão específica e paginação, depois administração/provisionamento
-- Próximas cinco ações: leitura de membros; administração/provisionamento/IdP; clientes; prestadores; catálogo/solicitações; F5/F6 continuam gates
-- Domínio atual: Membership, próximo incremento P0
+- Próxima ação: definir e implementar fronteira de administração/provisionamento sem ampliar grants do runtime comum
+- Próximas cinco ações: fronteira administrativa; convites/IdP; clientes; prestadores; catálogo/solicitações; F5/F6 continuam gates
+- Domínio atual: Membership, consulta concluída; comandos administrativos pendentes
 - Último domínio concluído: nenhum baseline de domínio completo; núcleo WorkOrders testado, controllers concluídos
-- Endpoints catalogados: 111; implementados: 14 (11 negócio + 3 técnicos); integration-tested: 14; security-tested de negócio: 11; performance HTTP: 0
-- P0 restantes: 43 operações; P1 restantes: 42, conforme endpoint-catalog; gates operacionais adicionais pendentes
-- Próximos endpoints: GET /v1/members e GET /v1/members/{id}; ainda não implementados
+- Endpoints catalogados: 111; implementados: 16 (13 negócio + 3 técnicos); integration-tested: 16; security-tested de negócio: 13; performance HTTP: 0
+- P0 restantes: 41 operações; P1 restantes: 42, conforme endpoint-catalog; gates operacionais adicionais pendentes
+- Próximos endpoints: convites e gestão delegada de memberships; implementar boundary privilegiada antes dos comandos HTTP
 
 ## Reconstrução de contexto
 

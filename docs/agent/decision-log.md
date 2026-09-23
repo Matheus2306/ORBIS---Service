@@ -2,6 +2,8 @@
 
 | Data | Decisão | Evidência / consequência |
 |---|---|---|
+| 2026-09-23 | ReadMembers separada de flags de ordens; seek sem enumeração global | 19 cenários de integração de membros, cursor/contratos; migration Small preserva flags, Down recusa perda; 175 testes verdes |
+| 2026-09-23 | Encerrar pools dos bancos sintéticos ao fim de cada teste | Falhas SQLSTATE53300 no gate inicial; medição 8→0/2→0 após limpeza por proprietário; limite40 e pooling da API mantidos |
 | 2026-09-22 | Contexto atual exige vínculo ativo, inclusive para metadados | Três GETs, sem enumeração global de tenants; membro sem flags só lê contexto, não ordens;153 testes verdes |
 | 2026-09-22 | Controllers por capacidade, DTOs separados e policy nomeada | ADR-014; rotas/segurança preservadas, diferenças MVC cobertas por 140 testes; rótulo de métrica documentado |
 | 2026-09-22 | Expansão orientada por capability, não quantidade de rotas | 31 domínios, 111 operações catalogadas/11 implementadas, 46 P0/42 P1 restantes; control plane separado antes de administração |

@@ -22,7 +22,7 @@ public sealed class ControllerContractTests(DatabaseFixture database)
         using var client = application.CreateClient();
         var routes = application.Services.GetRequiredService<EndpointDataSource>().Endpoints
             .OfType<RouteEndpoint>().Where(endpoint => endpoint.RoutePattern.RawText!.TrimStart('/').StartsWith("v1/", StringComparison.Ordinal)).ToArray();
-        Assert.Equal(11, routes.Length);
+        Assert.Equal(13, routes.Length);
         foreach (var route in routes)
         {
             Assert.NotNull(route.Metadata.GetMetadata<ControllerActionDescriptor>());
@@ -45,8 +45,11 @@ public sealed class ControllerContractTests(DatabaseFixture database)
     {
         await using var application = new ApiFactory(database);
         using var client = Client(application, application.Token(database.UserA, omittedClaim: claim));
-        using var response = await client.GetAsync("/v1/work-orders");
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        foreach (var path in new[] { "/v1/work-orders", "/v1/members", $"/v1/members/{database.UserA}" })
+        {
+            using var response = await client.GetAsync(path);
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
     }
 
     [Theory]
@@ -90,9 +93,9 @@ public sealed class ControllerContractTests(DatabaseFixture database)
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using var document = await response.Content.ReadFromJsonAsync<JsonDocument>();
         var paths = document!.RootElement.GetProperty("paths");
-        Assert.Equal(11, paths.EnumerateObject().Where(path => path.Name.StartsWith("/v1/", StringComparison.Ordinal))
+        Assert.Equal(13, paths.EnumerateObject().Where(path => path.Name.StartsWith("/v1/", StringComparison.Ordinal))
             .Sum(path => path.Value.EnumerateObject().Count()));
-        foreach (var path in new[] { "/v1/me", "/v1/me/permissions", "/v1/tenant" })
+        foreach (var path in new[] { "/v1/me", "/v1/me/permissions", "/v1/tenant", "/v1/members", "/v1/members/{id}" })
             Assert.True(paths.GetProperty(path).GetProperty("get").GetProperty("responses").TryGetProperty("200", out _));
         var orders = paths.GetProperty("/v1/work-orders");
         Assert.Equal(new[] { "cursor", "limit" }, orders.GetProperty("get").GetProperty("parameters").EnumerateArray()

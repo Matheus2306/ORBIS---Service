@@ -22,7 +22,7 @@ public sealed class TenantDbContext(DbContextOptions<TenantDbContext> options, T
         members.ToTable("memberships", table =>
         {
             table.HasCheckConstraint("ck_membership_ids", "tenant_id <> '00000000-0000-0000-0000-000000000000' AND user_id <> '00000000-0000-0000-0000-000000000000'");
-            table.HasCheckConstraint("ck_membership_permissions", "permissions BETWEEN 0 AND 127");
+            table.HasCheckConstraint("ck_membership_permissions", "permissions BETWEEN 0 AND 255");
         });
         members.HasKey(x => new { x.TenantId, x.UserId });
         members.Property(x => x.TenantId).HasColumnName("tenant_id").ValueGeneratedNever();

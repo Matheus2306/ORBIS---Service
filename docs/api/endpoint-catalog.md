@@ -1,10 +1,10 @@
 # Catálogo de endpoints — superfície atual e candidata
 
-2026-09-22. Uma entrada = uma operação método/rota. **Planejado** não registra endpoint nem concede permissão. Requests/responses novos são contratos candidatos a refinar no incremento de cada domínio; tipos atuais estão em código. Sem geração de controllers vazios.
+2026-09-23. Uma entrada = uma operação método/rota. **Planejado** não registra endpoint nem concede permissão. Requests/responses novos são contratos candidatos a refinar no incremento de cada domínio; tipos atuais estão em código. Sem geração de controllers vazios.
 
 Perfis efetivos (referenciados em cada entrada): **R** leitura, p95≤300ms/p99≤800ms; **W** escrita, p95≤500ms/p99≤1200ms; **H** consulta pesada limitada, alvo p95≤1000ms/p99≤2000ms; relatórios respondem 202 e executam fora do request. Pico: p95≤1000ms/p99≤2000ms. Metas, nunca medições. `page` = limit 25/máximo100 + cursor tenant/ator/filtros; janelas from/to devem ser limitadas antes de implementar. Coleções sem contagem global ou retorno ilimitado.
 
-**T** = tenant por domínio verificado + identidade/vínculo ativos + claim cruzada; **P** = plataforma, audiência/processo/grants separados, MFA e auditoria privilegiada; **A** = infraestrutura sem dados de negócio. Ator `perfil autorizado` é a persona mapeada pela permissão em [authorization-matrix](../security/authorization-matrix.md), e não qualquer portador de JWT. `Self`, `Member` e `Scoped` exigem relação persistida, nunca IDs declarados pelo cliente. Permissões fora das sete flags de ordens são propostas, ainda não implementadas.
+**T** = tenant por domínio verificado + identidade/vínculo ativos + claim cruzada; **P** = plataforma, audiência/processo/grants separados, MFA e auditoria privilegiada; **A** = infraestrutura sem dados de negócio. Ator `perfil autorizado` é a persona mapeada pela permissão em [authorization-matrix](../security/authorization-matrix.md), e não qualquer portador de JWT. `Self`, `Member` e `Scoped` exigem relação persistida, nunca IDs declarados pelo cliente. Implementadas: sete flags de ordens e ReadMembers. Demais permissões são propostas.
 
 Status **R**: 200/400/401/403/404/429/503 (500 inesperado). **W**: 200 ou 201 na criação, 400/401/403/404/409/415/429/503; 202 somente jobs. **Health**: 200/503 (readiness também429). **Doc**: 200 somente Development. Rotas ausentes não possuem comportamento contratado. Bodies têm allowlist; expectedVersion obrigatório em mutações de existentes. TenantId/actorId não são campos de autoridade. Datas UTC com timezone IANA da intenção; moeda e unidade explícitas.
 
@@ -20,8 +20,8 @@ Testes **O** = ApiIsolation/OrderListing/OrderCreation/OrderTransition/Controlle
 | API-004 | GET | `/v1/tenant/settings` | Tenant Settings | Ler configurações | perfil autorizado | T | Settings.Read | — | TenantSettings | R | — | — | R | P1 | Planejado | Pendente |
 | API-005 | PATCH | `/v1/tenant/settings` | Tenant Settings | Alterar timezone/locale | perfil autorizado | T | Settings.Manage | timezone,locale,expectedVersion | TenantSettings | W | receipt | command | W | P1 | Planejado | Pendente |
 | API-006 | GET | `/v1/tenant/limits` | Quotas | Consultar entitlements efetivos | perfil autorizado | T | Subscription.Read | — | EffectiveLimits | R | — | — | R | P1 | Planejado | Pendente |
-| API-007 | GET | `/v1/members` | Membership | Listar vínculos | perfil autorizado | T | Members.Read | page,status | MemberPage | R | — | — | R | P0 | Planejado | Pendente |
-| API-008 | GET | `/v1/members/{id}` | Membership | Consultar vínculo | perfil autorizado | T | Members.Read | id | MemberDetails | R | — | — | R | P0 | Planejado | Pendente |
+| API-007 | GET | `/v1/members` | Membership | Listar vínculos | perfil autorizado | T | ReadMembers | limit,cursor,status | MemberPage | R | — | — | R | P0 | Implementado | MemberReadTests/MemberCursorTests |
+| API-008 | GET | `/v1/members/{id}` | Membership | Consultar vínculo | perfil autorizado | T | ReadMembers | id=UserId | MemberDetails | R | — | — | R | P0 | Implementado | MemberReadTests |
 | API-009 | POST | `/v1/members/invitations` | Membership | Convidar identidade | perfil autorizado | T | Members.Manage | recipient,permissionSet,expiresAt | InvitationReceipt | W | receipt | command | W | P0 | Planejado | Pendente |
 | API-010 | GET | `/v1/members/invitations` | Membership | Listar convites sem token | perfil autorizado | T | Members.Manage | page,status | InvitationPage | R | — | — | R | P0 | Planejado | Pendente |
 | API-011 | DELETE | `/v1/members/invitations/{id}` | Membership | Revogar convite | perfil autorizado | T | Members.Manage | id,expectedVersion | InvitationReceipt | W | receipt | command | W | P0 | Planejado | Pendente |
@@ -129,9 +129,9 @@ Testes **O** = ApiIsolation/OrderListing/OrderCreation/OrderTransition/Controlle
 ## Cobertura verificável
 
 - Domínios de produto planejados: 31; completos para baseline produtivo: 0.
-- Operações catalogadas: 111; implementadas: 14 (11 de negócio + 3 técnicas).
-- Integração funcional: 14 operações; segurança de negócio: 11 com suíte negativa. CurrentContextTests valida as três consultas de contexto, conforme relatório 2026-09-22-current-context. Performance HTTP: 0.
-- Restantes planejados P0: 43; P1: 42. Os demais são P2. Não confundir dependência implementada com domínio concluído.
+- Operações catalogadas: 111; implementadas: 16 (13 de negócio + 3 técnicas).
+- Integração funcional: 16 operações; segurança de negócio: 13 com suíte negativa. CurrentContextTests cobre contexto; MemberReadTests cobre memberships. Evidência e resultado do gate em [relatório de memberships](../testing/reports/2026-09-23-membership-read.md). Performance HTTP: 0.
+- Restantes planejados P0: 41; P1: 42. Os demais são P2. Não confundir dependência implementada com domínio concluído.
 
 ## Consolidação e decisões pendentes
 

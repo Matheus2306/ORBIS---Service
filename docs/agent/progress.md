@@ -1,5 +1,9 @@
 # Progresso
 
+## 2026-09-23 — leitura administrativa de memberships
+
+Commit de contexto 1876cd7 concluído após retomada. Lista/detalhe de membros com ReadMembers, cursor tenant/ator/status, projeção mínima e no-store. Migration testada em Small preserva dados e limita DDL; Down recusa perder bit128. Primeiro gate reprovado por asserção de exceção encapsulada e pools ociosos acumulados em bancos do harness; corrigidos sem aumentar max_connections. 30 testes focados e gate final com 175 testes/12 checks/26 regras aprovados; pools comprovadamente zerados por teste. 16 operações implementadas, baseline produtivo ainda incompleto. Próximo: fronteira administrativa antes de convites/gestão.
+
 ## 2026-09-22 — contexto atual
 
 Implementados me/permissões/tenant com membership ativo/RLS, DTOs mínimos e no-store. Pool liberado antes da consulta seguinte, comprovado com pool máximo1.153 testes/12 checks aprovados; sem grants/migration,14 operações funcionais. Próximo: leitura administrativa de memberships, depois gestão segura.

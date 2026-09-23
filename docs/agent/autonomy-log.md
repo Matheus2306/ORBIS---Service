@@ -1,5 +1,9 @@
 # Autonomia
 
+## AUT-019 — consulta de membros e orçamento real de conexões do harness
+
+Problema: administração não possuía consulta segura de vínculos. Decisão: ReadMembers explícita, DTO local mínimo, seek vinculado a tenant/ator/status, sem grants de escrita ou privilégios herdados de ordens. Migration Small com lock/statement timeouts e Down que falha sem descartar flags. Experimento: primeira suíte encontrou wrapping de SQLSTATE55P03 e esgotamento53300 por pools por banco sintético. Corrigida asserção exata; pools pertencentes a cada teste são encerrados e pg_stat_activity exige zero sessões restantes. Não elevar max_connections. Evidência: 30 testes focados, depois175/175, 26 regras e12 checks; 8→0/2→0 conexões; migration27,808ms no ensaio final, sem alegação de escala. Intervenção humana: retomada solicitada; nenhuma decisão técnica normal exigiu confirmação.
+
 ## AUT-018 — contexto sem ampliação de autoridade
 
 Problema: portais não conseguiam obter identidade/organização/permissões atuais. Decisão: três GETs mínimos, resolvendo domínio/identidade e lendo membership sob RLS. Risco: consulta ao diretório enquanto a transação tenant segura conexão consumiria duas posições do pool. Implementação libera a primeira conexão antes da seguinte; teste real com pool1 passou. Evidência:153 testes/12 checks; sem alteração de grants/schema, sem capacidade de carga alegada. Intervenção humana: nenhuma.
