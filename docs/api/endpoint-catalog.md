@@ -2,11 +2,11 @@
 
 2026-09-23. Uma entrada = uma operação método/rota. **Planejado** não registra endpoint nem concede permissão. Requests/responses novos são contratos candidatos a refinar no incremento de cada domínio; tipos atuais estão em código. Sem geração de controllers vazios.
 
-Atualização do núcleo administrativo: ManageMembers (256), delegação e transação de acesso implementadas internamente, sem novas rotas. Consultas de membros incluem version. API-013/014/015 continuam planejadas até host/audiência/MFA/guard/contratos HTTP; contagens inalteradas. Detalhes em [membership-administration](membership-administration.md).
+Atualização2026-09-24: API-013/014/015 implementadas no host administrativo com ManageMembers, MFA, audiência e grants exclusivos. Detalhes em [membership-administration](membership-administration.md). Probes/OpenAPI repetidos contam uma vez por método/rota:19 operações únicas ou22 registros host+método+rota (OpenAPI somente Development).
 
 Perfis efetivos (referenciados em cada entrada): **R** leitura, p95≤300ms/p99≤800ms; **W** escrita, p95≤500ms/p99≤1200ms; **H** consulta pesada limitada, alvo p95≤1000ms/p99≤2000ms; relatórios respondem 202 e executam fora do request. Pico: p95≤1000ms/p99≤2000ms. Metas, nunca medições. `page` = limit 25/máximo100 + cursor tenant/ator/filtros; janelas from/to devem ser limitadas antes de implementar. Coleções sem contagem global ou retorno ilimitado.
 
-**T** = tenant por domínio verificado + identidade/vínculo ativos + claim cruzada; **P** = plataforma, audiência/processo/grants separados, MFA e auditoria privilegiada; **A** = infraestrutura sem dados de negócio. Ator `perfil autorizado` é a persona mapeada pela permissão em [authorization-matrix](../security/authorization-matrix.md), e não qualquer portador de JWT. `Self`, `Member` e `Scoped` exigem relação persistida, nunca IDs declarados pelo cliente. Implementadas: sete flags de ordens, ReadMembers e ManageMembers (somente núcleo administrativo). Demais permissões são propostas.
+**T** = tenant por domínio verificado + identidade/vínculo ativos + claim cruzada; **P** = plataforma, audiência/processo/grants separados, MFA e auditoria privilegiada; **A** = infraestrutura sem dados de negócio. Ator `perfil autorizado` é a persona mapeada pela permissão em [authorization-matrix](../security/authorization-matrix.md), e não qualquer portador de JWT. `Self`, `Member` e `Scoped` exigem relação persistida, nunca IDs declarados pelo cliente. Implementadas: sete flags de ordens, ReadMembers e ManageMembers (somente host administrativo). Demais permissões são propostas.
 
 Status **R**: 200/400/401/403/404/429/503 (500 inesperado). **W**: 200 ou 201 na criação, 400/401/403/404/409/415/429/503; 202 somente jobs. **Health**: 200/503 (readiness também429). **Doc**: 200 somente Development. Rotas ausentes não possuem comportamento contratado. Bodies têm allowlist; expectedVersion obrigatório em mutações de existentes. TenantId/actorId não são campos de autoridade. Datas UTC com timezone IANA da intenção; moeda e unidade explícitas.
 
@@ -28,9 +28,9 @@ Testes **O** = ApiIsolation/OrderListing/OrderCreation/OrderTransition/Controlle
 | API-010 | GET | `/v1/members/invitations` | Membership | Listar convites sem token | perfil autorizado | T | Members.Manage | page,status | InvitationPage | R | — | — | R | P0 | Planejado | Pendente |
 | API-011 | DELETE | `/v1/members/invitations/{id}` | Membership | Revogar convite | perfil autorizado | T | Members.Manage | id,expectedVersion | InvitationReceipt | W | receipt | command | W | P0 | Planejado | Pendente |
 | API-012 | POST | `/v1/members/invitations/accept` | Membership | Aceitar convite vinculado | próprio usuário | T | Self+InvitationRecipient | token no corpo | MembershipReceipt | W | receipt | command | W | P0 | Planejado | Pendente |
-| API-013 | PATCH | `/v1/members/{id}/permissions` | Membership | Alterar conjunto delegado | perfil autorizado | T | Members.Manage | permissionSet,expectedVersion | MemberDetails | W | receipt | command | W | P0 | Planejado | Pendente |
-| API-014 | POST | `/v1/members/{id}/suspend` | Membership | Suspender vínculo preservando histórico | perfil autorizado | T | Members.Manage | expectedVersion,reason | MemberDetails | W | receipt | command | W | P0 | Planejado | Pendente |
-| API-015 | POST | `/v1/members/{id}/activate` | Membership | Reativar vínculo | perfil autorizado | T | Members.Manage | expectedVersion | MemberDetails | W | receipt | command | W | P0 | Planejado | Pendente |
+| API-013 | PATCH | `/v1/members/{id}/permissions` | Membership | Alterar conjunto delegado | administrador com MFA | T | ManageMembers | permissionSet,expectedVersion | MemberDetails | W | receipt | command | W | P0 | Implementado | AdministrativeHttpTests |
+| API-014 | POST | `/v1/members/{id}/suspend` | Membership | Suspender vínculo preservando histórico | administrador com MFA | T | ManageMembers | expectedVersion | MemberDetails | W | receipt | command | W | P0 | Implementado | AdministrativeHttpTests |
+| API-015 | POST | `/v1/members/{id}/activate` | Membership | Reativar vínculo | administrador com MFA | T | ManageMembers | expectedVersion | MemberDetails | W | receipt | command | W | P0 | Implementado | AdministrativeHttpTests |
 | API-016 | GET | `/v1/customers` | Customers | Listar clientes autorizados | perfil autorizado | T | Customers.Read | page,status,q | CustomerPage | R | — | — | R | P0 | Planejado | Pendente |
 | API-017 | GET | `/v1/customers/{id}` | Customers | Ler perfil comercial | perfil autorizado | T | Customers.Read | id | CustomerDetails | R | — | — | R | P0 | Planejado | Pendente |
 | API-018 | POST | `/v1/customers` | Customers | Cadastrar cliente no tenant | perfil autorizado | T | Customers.Manage | displayName,contactRef | CustomerDetails | W | receipt | command | W | P0 | Planejado | Pendente |
@@ -131,9 +131,9 @@ Testes **O** = ApiIsolation/OrderListing/OrderCreation/OrderTransition/Controlle
 ## Cobertura verificável
 
 - Domínios de produto planejados: 31; completos para baseline produtivo: 0.
-- Operações catalogadas: 111; implementadas: 16 (13 de negócio + 3 técnicas).
-- Integração funcional: 16 operações; segurança de negócio: 13 com suíte negativa. CurrentContextTests cobre contexto; MemberReadTests cobre memberships. Evidência e resultado do gate em [relatório de memberships](../testing/reports/2026-09-23-membership-read.md). Performance HTTP: 0.
-- Restantes planejados P0: 41; P1: 42. Os demais são P2. Não confundir dependência implementada com domínio concluído.
+- Operações catalogadas: 111; implementadas: 19 (16 de negócio + 3 técnicas).
+- Integração funcional: 19 operações; segurança de negócio: 16 com suíte negativa. CurrentContextTests cobre contexto; MemberReadTests cobre memberships. Administração em AdministrativeHttpTests; [evidência atual](../testing/reports/2026-09-24-administrative-http.md). Performance HTTP: 0.
+- Restantes planejados P0: 38; P1: 42. Os demais são P2. Não confundir dependência implementada com domínio concluído.
 
 ## Consolidação e decisões pendentes
 

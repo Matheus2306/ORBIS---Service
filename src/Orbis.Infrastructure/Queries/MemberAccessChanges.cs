@@ -9,7 +9,7 @@ using Orbis.Infrastructure.Persistence;
 
 namespace Orbis.Infrastructure.Queries;
 
-// Registro somente no futuro host administrativo; a API comum não possui os grants usados aqui.
+// Registro exclusivo do host administrativo; a API comum não possui os grants usados aqui.
 public sealed class MemberAccessChanges(DbContextOptions<TenantDbContext> options, TimeProvider clock) : IMemberAccessChanges
 {
     private static readonly Meter Meter = new("Orbis.MembershipAdministration");
@@ -48,7 +48,10 @@ public sealed class MemberAccessChanges(DbContextOptions<TenantDbContext> option
         var member = await database.Memberships.SingleOrDefaultAsync(x => x.UserId == actor.UserId, cancellationToken);
         if (member is null || !member.Allows(Permission.ManageMembers)) return new(ChangeMemberAccessOutcome.Denied);
         var target = await database.Memberships.SingleOrDefaultAsync(x => x.UserId == command.MemberId, cancellationToken);
-        if (target is null || !MembershipAccess.CanChange(member, target, command.Permissions)) return new(ChangeMemberAccessOutcome.Denied);
+        if (target is null) return new(ChangeMemberAccessOutcome.Denied);
+        var permissions = command.Permissions ?? target.Permissions;
+        var isActive = command.IsActive ?? target.IsActive;
+        if (!MembershipAccess.CanChange(member, target, permissions)) return new(ChangeMemberAccessOutcome.Denied);
 
         var fingerprint = command.Fingerprint();
         var receipt = await database.MembershipAccessChanges.AsNoTracking()
@@ -57,13 +60,13 @@ public sealed class MemberAccessChanges(DbContextOptions<TenantDbContext> option
             return receipt.Fingerprint == fingerprint
                 ? new(ChangeMemberAccessOutcome.Replayed, new(receipt.MemberId, receipt.Permissions, receipt.IsActive, receipt.Version))
                 : new(ChangeMemberAccessOutcome.Conflict);
-        if (target.Version != command.ExpectedVersion || (target.Permissions == command.Permissions && target.IsActive == command.IsActive))
+        if (target.Version != command.ExpectedVersion || (target.Permissions == permissions && target.IsActive == isActive))
             return new(ChangeMemberAccessOutcome.Conflict);
-        if (command.IsActive && !await database.Database.SqlQuery<bool>($"""
+        if (isActive && !await database.Database.SqlQuery<bool>($"""
             SELECT EXISTS (SELECT 1 FROM directory.users WHERE id={target.UserId} AND is_active) AS "Value"
             """).SingleAsync(cancellationToken)) return new(ChangeMemberAccessOutcome.Denied);
 
-        if (target.Allows(Permission.ManageMembers) && (!command.IsActive || (command.Permissions & Permission.ManageMembers) == 0))
+        if (target.Allows(Permission.ManageMembers) && (!isActive || (permissions & Permission.ManageMembers) == 0))
         {
             // O predicado participa da SSI: dois administradores não podem remover simultaneamente o último acesso.
             var another = await database.Memberships.FromSqlInterpolated($"""
@@ -72,7 +75,7 @@ public sealed class MemberAccessChanges(DbContextOptions<TenantDbContext> option
                 """).AnyAsync(cancellationToken);
             if (!another) return new(ChangeMemberAccessOutcome.Conflict);
         }
-        var change = MembershipAccessChange.Apply(member, target, command.Permissions, command.IsActive, command.Key, fingerprint, clock.GetUtcNow());
+        var change = MembershipAccessChange.Apply(member, target, permissions, isActive, command.Key, fingerprint, clock.GetUtcNow());
         database.MembershipAccessChanges.Add(change);
         await database.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);

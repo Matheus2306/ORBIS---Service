@@ -1,4 +1,5 @@
 using System.Globalization;
+using Orbis.Application.Identity;
 using Orbis.Application.Memberships;
 using Orbis.Domain.Identity;
 
@@ -6,6 +7,30 @@ namespace Orbis.Tests;
 
 public sealed class MembershipAccessTests
 {
+    [Fact]
+    public void PartialCommandsHaveUnambiguousFingerprintsAndRequireAtLeastOneChange()
+    {
+        var command = new ChangeMemberAccessCommand(Guid.NewGuid(), Permission.None, false, 1, Guid.NewGuid());
+        var permissions = command with { IsActive = null };
+        var status = command with { Permissions = null };
+        Assert.True(permissions.IsValid);
+        Assert.True(status.IsValid);
+        Assert.False((command with { Permissions = null, IsActive = null }).IsValid);
+        Assert.Equal(3, new[] { command.Fingerprint(), permissions.Fingerprint(), status.Fingerprint() }.Distinct().Count());
+    }
+
+    [Fact]
+    public void PermissionContractRejectsNumericCompositeDuplicateUnknownAndNullNames()
+    {
+        Assert.True(PermissionNames.TryParse([], out var none));
+        Assert.Equal(Permission.None, none);
+        Assert.True(PermissionNames.TryParse(["ReadMembers", "ManageMembers"], out var valid));
+        Assert.Equal(Permission.ReadMembers | Permission.ManageMembers, valid);
+        foreach (var invalid in new IReadOnlyList<string>?[] { null, [null!], ["None"], ["128"], ["ReadMembers, ManageMembers"],
+            [" ReadMembers"], ["readmembers"], ["ReadMembers", "ReadMembers"], ["FuturePermission"] })
+            Assert.False(PermissionNames.TryParse(invalid, out _));
+    }
+
     [Fact]
     public void DelegationCannotCrossTenantsExceedActorsRightsOrControlStrongerMembers()
     {
@@ -44,7 +69,7 @@ public sealed class MembershipAccessTests
     {
         var member = new Membership(Guid.NewGuid(), Guid.NewGuid(), Permission.ManageMembers);
         var command = new ChangeMemberAccessCommand(member.UserId, Permission.None, true, 1, Guid.NewGuid());
-        var change = MembershipAccessChange.Apply(member, member, command.Permissions, true, command.Key, command.Fingerprint(), DateTimeOffset.UnixEpoch);
+        var change = MembershipAccessChange.Apply(member, member, command.Permissions!.Value, true, command.Key, command.Fingerprint(), DateTimeOffset.UnixEpoch);
         Assert.Equal(Permission.ManageMembers, change.PreviousPermissions);
         Assert.Equal(Permission.None, change.Permissions);
         Assert.Equal(1, change.PreviousVersion);

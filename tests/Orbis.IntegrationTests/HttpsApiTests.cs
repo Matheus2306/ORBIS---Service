@@ -171,6 +171,9 @@ public sealed class HttpsApiTests(DatabaseFixture database)
         }
 
         public HttpClient CreateClient(bool untrusted = false)
+            => CreateHttpsClient(Application.ClientOptions.BaseAddress, untrusted ? untrustedRoot : root);
+
+        internal static HttpClient CreateHttpsClient(Uri address, X509Certificate2 trustedRoot)
         {
             var policy = new X509ChainPolicy
             {
@@ -179,12 +182,12 @@ public sealed class HttpsApiTests(DatabaseFixture database)
                 RevocationMode = X509RevocationMode.NoCheck,
                 VerificationFlags = X509VerificationFlags.NoFlag
             };
-            policy.CustomTrustStore.Add(untrusted ? untrustedRoot : root);
+            policy.CustomTrustStore.Add(trustedRoot);
             return new HttpClient(new SocketsHttpHandler { SslOptions = new SslClientAuthenticationOptions { CertificateChainPolicy = policy } })
-            { BaseAddress = Application.ClientOptions.BaseAddress, Timeout = TimeSpan.FromSeconds(10) };
+            { BaseAddress = address, Timeout = TimeSpan.FromSeconds(10) };
         }
 
-        private static X509Certificate2 LoadServerCertificate(string directory)
+        internal static X509Certificate2 LoadServerCertificate(string directory)
         {
             var pem = X509Certificate2.CreateFromPemFile(Path.Combine(directory, "server.crt"), Path.Combine(directory, "server.key"));
             if (!OperatingSystem.IsWindows()) return pem;

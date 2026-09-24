@@ -1,4 +1,4 @@
-namespace Orbis.Api;
+namespace Orbis.Hosting;
 
 public sealed class AuthenticationSettings
 {

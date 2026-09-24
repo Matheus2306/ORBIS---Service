@@ -1,7 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http;
 using Orbis.Application.Tenancy;
 
-namespace Orbis.Api;
+namespace Orbis.Hosting;
 
 public static class TenantHttpRequest
 {

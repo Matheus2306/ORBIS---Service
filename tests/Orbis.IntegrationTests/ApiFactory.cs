@@ -28,17 +28,19 @@ public sealed class ApiFactory(DatabaseFixture database, string environment = "T
             ["Authentication:Audience"] = Audience,
             ["ConnectionStrings:Orbis"] = database.RuntimeConnection
         }));
-        builder.ConfigureServices(services => services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
-        {
-            // Somente o endpoint de discovery é substituído; assinatura e todas as validações JWT permanecem reais.
-            var configuration = new OpenIdConnectConfiguration { Issuer = Issuer };
-            configuration.SigningKeys.Add(new RsaSecurityKey(_signingKey.ExportParameters(false)) { KeyId = _keyId });
-            options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(configuration);
-        }));
+        builder.ConfigureServices(services => services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, ConfigureSigningKeys));
+    }
+
+    internal void ConfigureSigningKeys(JwtBearerOptions options)
+    {
+        // Os dois hosts de teste usam o mesmo emissor: diferenças de audiência não podem ser mascaradas por chaves diferentes.
+        var configuration = new OpenIdConnectConfiguration { Issuer = Issuer };
+        configuration.SigningKeys.Add(new RsaSecurityKey(_signingKey.ExportParameters(false)) { KeyId = _keyId });
+        options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(configuration);
     }
 
     public string Token(Guid userId, string? issuer = null, string? audience = null, Guid? tenantId = null,
-        bool expired = false, string type = "at+jwt", bool wrongKey = false, string? omittedClaim = null)
+        bool expired = false, string type = "at+jwt", bool wrongKey = false, string? omittedClaim = null, IEnumerable<Claim>? additionalClaims = null)
     {
         var now = DateTime.UtcNow;
         var claims = new List<Claim>
@@ -47,6 +49,7 @@ public sealed class ApiFactory(DatabaseFixture database, string environment = "T
             new("iat", new DateTimeOffset(now).ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture), ClaimValueTypes.Integer64)
         };
         if (omittedClaim is not null) claims.RemoveAll(claim => claim.Type == omittedClaim);
+        if (additionalClaims is not null) claims.AddRange(additionalClaims);
         if (tenantId.HasValue) claims.Add(new Claim("tenant_id", tenantId.ToString()!));
         using var invalidKey = wrongKey ? RSA.Create(2048) : null;
         var key = new RsaSecurityKey(invalidKey ?? _signingKey) { KeyId = wrongKey ? "unknown" : _keyId };

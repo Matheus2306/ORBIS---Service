@@ -1,6 +1,6 @@
 # ADR-016 — alterações transacionais de acesso ao tenant
 
-2026-09-23. Status: implementado no domínio/aplicação/persistência. Exposição HTTP depende do host administrativo do ADR-015.
+2026-09-23, atualizado2026-09-24. Núcleo implementado; exposição HTTP no host separado do ADR-017. Campos ausentes no comando agora preservam valor dentro da transação; fingerprints completos anteriores permanecem iguais. IdP e implantação operacionais pendentes.
 
 ## Problema e requisitos
 

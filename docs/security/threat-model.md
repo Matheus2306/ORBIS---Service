@@ -1,5 +1,9 @@
 # Threat model — ORBIS SERVICE
 
+## Administração de membership (2026-09-24)
+
+Processo administrativo guarda credencial dedicada; a API comum não a recebe. Audiência exata, client allowlist e ACR/auth_time assinados recentes complementam autorização persistida e RLS. Ataques considerados: token comum, MFA antiga/duplicada, alteração de tenant/host/payload, delegação excessiva, autoexclusão do último administrador, replay após revogação e grants indevidos. DTOs parciais preservam campos dentro da transação; audit/recibo atômicos. Ver ADR-017 e AdministrativeHttpTests/AdministrativePrivilegeTests. IdP confiável mal configurado pode afirmar MFA incorretamente: testar integração real antes de produção. Token bearer roubado continua reutilizável até expiração/idade máxima/revogação; DPoP/mTLS não implementados. Readiness não revoga privilégios nem cancela requests em andamento. Proteção distribuída, retenção de audit e bootstrapping seguem pendentes.
+
 ## Fronteira da evidência local (2026-09-21)
 
 `scripts/validate-local.ps1` executa ferramentas locais fixadas e lê seus artefatos. Exit code zero isolado não autoriza aprovação: JSON NuGet precisa cobrir os projetos e não conter diagnósticos/achados; TRX precisa cobrir as assemblies, com todos os resultados aprovados. Snapshot/hashes detectam divergência acidental durante a execução; não são assinatura, sandbox para executável malicioso ou atestado de CI. Operador/host/scanner continuam parte da base de confiança. Logs locais exigem revisão antes de compartilhar. Gate local sempre declara productionApproved=false; um relatório local não autoriza release.

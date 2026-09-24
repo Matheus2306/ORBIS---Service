@@ -1,89 +1,23 @@
-using System.Diagnostics;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Npgsql;
 using Orbis.Api;
 using Orbis.Application.Memberships;
 using Orbis.Application.Tenancy;
 using Orbis.Application.WorkOrders;
-using Orbis.Infrastructure.Persistence;
+using Orbis.Hosting;
 using Orbis.Infrastructure.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
-builder.Logging.AddJsonConsole(options => options.IncludeScopes = true);
-builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
-    context.ProblemDetails.Extensions["traceId"] = Activity.Current?.Id ?? context.HttpContext.TraceIdentifier);
-builder.Services.AddExceptionHandler<DependencyExceptionHandler>();
+builder.AddOrbisHttp();
 builder.Services.AddOpenApi();
-builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
-{
-    // Erros de binding não devem devolver valores do payload nem detalhes do desserializador.
-    options.InvalidModelStateResponseFactory = context => new BadRequestObjectResult(
-        context.HttpContext.RequestServices.GetRequiredService<ProblemDetailsFactory>()
-            .CreateProblemDetails(context.HttpContext, StatusCodes.Status400BadRequest, title: "Invalid request."));
-});
-builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 32 * 1024);
-
-builder.Services.AddOptions<AuthenticationSettings>().BindConfiguration("Authentication")
-    .Validate(settings => settings.IsValid(), "HTTPS authentication authority and API audience are required.").ValidateOnStart();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
-builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-    .Configure<IOptions<AuthenticationSettings>>((options, settings) =>
-{
-    options.Authority = settings.Value.Authority;
-    options.Audience = settings.Value.Audience;
-    options.RequireHttpsMetadata = true;
-    options.MapInboundClaims = false;
-    options.IncludeErrorDetails = false;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidIssuer = settings.Value.Authority,
-        ValidateAudience = true,
-        ValidAudience = settings.Value.Audience,
-        ValidateIssuerSigningKey = true,
-        RequireSignedTokens = true,
-        RequireExpirationTime = true,
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.FromSeconds(30),
-        ValidTypes = ["at+jwt"],
-        ValidAlgorithms = [SecurityAlgorithms.RsaSha256, SecurityAlgorithms.RsaSsaPssSha256, SecurityAlgorithms.EcdsaSha256]
-    };
-});
-var tenantAccessPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser()
-    .RequireClaim("sub").RequireClaim("client_id").RequireClaim("jti").RequireClaim("iat").Build();
+builder.Services.AddOrbisJwt("Authentication");
+var tenantAccessPolicy = OrbisAuthentication.IdentityPolicy().Build();
 // Uma policy nomeada mantém as claims obrigatórias mesmo com autorização explícita nos controllers.
 builder.Services.AddAuthorizationBuilder().SetFallbackPolicy(tenantAccessPolicy)
     .AddPolicy(ApiPolicies.TenantAccess, tenantAccessPolicy);
 
-builder.Services.AddSingleton(services =>
-{
-    var connection = services.GetRequiredService<IConfiguration>().GetConnectionString("Orbis");
-    if (string.IsNullOrWhiteSpace(connection)) throw new InvalidOperationException("Database connection is required.");
-    var databaseSettings = new NpgsqlConnectionStringBuilder(connection);
-    var environment = services.GetRequiredService<IHostEnvironment>();
-    if (!environment.IsDevelopment() && !environment.IsEnvironment("Testing") && databaseSettings.SslMode != SslMode.VerifyFull)
-        throw new InvalidOperationException("Database TLS with full certificate verification is required outside Development and Testing.");
-    databaseSettings.MaxPoolSize = Math.Min(databaseSettings.MaxPoolSize, 20);
-    databaseSettings.Timeout = 5;
-    databaseSettings.CommandTimeout = 5;
-    // O nome do pool vira atributo de métrica; não publicar a connection string nem criar uma série por tenant.
-    return new NpgsqlDataSourceBuilder(databaseSettings.ConnectionString) { Name = "orbis-runtime" }.Build();
-});
-builder.Services.AddDbContext<DirectoryDbContext>((services, options) =>
-    options.UseNpgsql(services.GetRequiredService<NpgsqlDataSource>(), provider =>
-        provider.MigrationsHistoryTable("__DirectoryMigrationsHistory", "directory")));
-builder.Services.AddSingleton(services => new DbContextOptionsBuilder<TenantDbContext>()
-    .UseNpgsql(services.GetRequiredService<NpgsqlDataSource>()).Options);
+builder.Services.AddOrbisDatabase("Orbis", "orbis-runtime", 20);
 builder.Services.AddScoped<ITenantDirectory, TenantDirectory>();
 builder.Services.AddScoped<IWorkOrderReader, WorkOrderReader>();
 builder.Services.AddScoped<ReadWorkOrder>();

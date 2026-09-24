@@ -1,5 +1,9 @@
 # Autonomia
 
+## AUT-022 — expor administração sem compartilhar autoridade
+
+Problema: núcleo de acesso sem HTTP e credencial comum incapaz de alterar membros. Alternativas: ampliar grants, dois pools no mesmo processo, host separado; escolhido último conforme ADR-015. Hosting compartilhado evita duplicação/referência entre controllers. ACR/auth_time/audiência/client assinados condicionam o acesso; membership continua autoridade de tenant.49 casos administrativos focados passaram; gate completo detectou regressão500→503 em falha de integridade, corrigida sem relaxar teste. Limites locais não representam capacidade. Catálogo avança três operações; convites/IdP operacional e benchmark seguem backlog. Intervenção humana: pedidos de continuação, sem confirmação técnica adicional.
+
 ## AUT-021 — proteger invariantes entre administradores
 
 Problema: versões por linha não impedem dois administradores de removerem seus acessos simultaneamente. Alternativas: Serializable/SSI, advisory lock por tenant, linha coordenadora; Read Committed com contagem isolada insuficiente. Experimento: dois snapshots sincronizados, disputas de100 comandos, rollback por constraint de audit, chave compartilhada entre alvos e credencial restrita. Decisão: SSI com até três tentativas completas, versões e audit/recibo atomicamente persistidos; sem dependência nova. Evidência:213 testes/12 checks, último administrador preservado, role comum impedida de ler/mutar histórico administrativo. Nenhum resultado convertido em capacidade. Host/MFA/endpoints de escrita ainda não expostos. Intervenção humana: usuário solicitou continuação; decisões técnicas normais seguiram autonomamente.

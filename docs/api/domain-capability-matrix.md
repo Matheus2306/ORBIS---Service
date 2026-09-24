@@ -6,8 +6,8 @@
 |---|---|---|---|---|
 | Identity | Parcial: contexto implementado | P0 | UserAccount, ExternalIdentity; UserPreference futura | `/me` implementado; login/MFA no IdP e preferências pendentes |
 | Tenancy | Parcial: contexto implementado | P0 | Tenant, TenantDomain; TenantSettings futuro | `/tenant` implementado; settings/provisionamento pendentes |
-| Membership | Parcial: consulta e núcleo de escrita | P0 | Membership, MembershipAccessChange; Invitation futura | `/members` inclui version; núcleo de suspensão/reativação, audit e último admin testado; host/endpoints administrativos e convites pendentes |
-| Authorization | Parcial: gestão delegada interna | P0 | Permission flags; Role futura | `/me/permissions`, policies e autorização de recurso; ManageMembers/delegação testadas no núcleo, exposição administrativa pendente |
+| Membership | Parcial: consulta e comandos HTTP | P0 | Membership, MembershipAccessChange; Invitation futura | `/members` inclui version; núcleo de suspensão/reativação, audit e último admin testado; host/commands administrativos com MFA implementados; convites/provisionamento pendentes |
+| Authorization | Parcial: gestão delegada HTTP | P0 | Permission flags; Role futura | `/me/permissions`, policies e autorização de recurso; ManageMembers/delegação em host separado com audiência/MFA próprias |
 | Customers | Inexistente | P0 | Customer, CustomerContact | `/customers`, atualizar/arquivar/restaurar, histórico preservado |
 | Providers | Parcial: designação por UserId | P0 | ProviderProfile, ProviderMembership | `/providers`, ativar/suspender; perfil tenant-local |
 | Provider Skills | Inexistente | P1 | Skill, ProviderSkill | `/providers/{id}/skills`, competências do catálogo |

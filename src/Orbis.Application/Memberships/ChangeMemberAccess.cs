@@ -6,13 +6,15 @@ using Orbis.Domain.Identity;
 
 namespace Orbis.Application.Memberships;
 
-public sealed record ChangeMemberAccessCommand(Guid MemberId, Permission Permissions, bool IsActive, long ExpectedVersion, Guid Key)
+public sealed record ChangeMemberAccessCommand(Guid MemberId, Permission? Permissions, bool? IsActive, long ExpectedVersion, Guid Key)
 {
-    public bool IsValid => MemberId != Guid.Empty && Key != Guid.Empty && ExpectedVersion > 0 && Membership.ArePermissionsValid(Permissions);
+    public bool IsValid => MemberId != Guid.Empty && Key != Guid.Empty && ExpectedVersion > 0 &&
+        (Permissions.HasValue || IsActive.HasValue) && (!Permissions.HasValue || Membership.ArePermissionsValid(Permissions.Value));
 
+    // Campos ausentes são preservados dentro da transação; comandos completos mantêm seus fingerprints históricos.
     public string Fingerprint() => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join('\n',
-        "membership.access.v1", MemberId.ToString("D"), ((int)Permissions).ToString(CultureInfo.InvariantCulture),
-        IsActive ? "active" : "suspended", ExpectedVersion.ToString(CultureInfo.InvariantCulture)))));
+        "membership.access.v1", MemberId.ToString("D"), Permissions.HasValue ? ((int)Permissions.Value).ToString(CultureInfo.InvariantCulture) : "unchanged",
+        IsActive.HasValue ? IsActive.Value ? "active" : "suspended" : "unchanged", ExpectedVersion.ToString(CultureInfo.InvariantCulture)))));
 }
 
 public enum ChangeMemberAccessOutcome { Applied, Replayed, Denied, Invalid, Conflict, Busy }

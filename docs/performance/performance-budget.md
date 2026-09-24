@@ -8,6 +8,7 @@
 | Contexto /me, /me/permissions e /tenant | 300 ms | 800 ms | 1.000 ms | 2.000 ms | DTO mínimo; três leituras limitadas; uma conexão por vez |
 | Criar solicitação/ordem | 500 ms | 1.200 ms | 1.000 ms | 2.000 ms | body até 32 KiB; idempotência |
 | Aceitar/iniciar/concluir | 500 ms | 1.200 ms | 1.000 ms | 2.000 ms | versão e conflito explícitos |
+| Permissões/suspensão/reativação de membro | 500 ms | 1.200 ms | 1.000 ms | 2.000 ms | host administrativo; body8KiB,4 operações/pool8, orçamento cooperativo5s; sem percentis medidos |
 | Exportação futura | 500 ms para aceitar job | 1.200 ms para aceitar job | SLO próprio | SLO próprio | não executar relatório ilimitado no request |
 
 Erros de servidor+timeouts <0,1% nominal e <1% pico; 5xx reportados separados. 4xx maliciosos previstos excluídos de disponibilidade funcional, mas reportados por classe. 429 em tráfego legítimo conta como demanda não atendida, nunca escondido como teste bem-sucedido. Endpoint pesado possui série própria.

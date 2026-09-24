@@ -497,11 +497,19 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
+      "orbis.administration.api": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": "[10.0.12, )",
+          "Orbis.Hosting": "[1.0.0, )"
+        }
+      },
       "orbis.api": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.12, )",
           "Microsoft.AspNetCore.OpenApi": "[10.0.12, )",
+          "Orbis.Hosting": "[1.0.0, )",
           "Orbis.Infrastructure": "[1.0.0, )"
         }
       },
@@ -519,6 +527,13 @@
       },
       "orbis.domain": {
         "type": "Project"
+      },
+      "orbis.hosting": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.12, )",
+          "Orbis.Infrastructure": "[1.0.0, )"
+        }
       },
       "orbis.infrastructure": {
         "type": "Project",

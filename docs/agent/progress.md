@@ -1,5 +1,9 @@
 # Progresso
 
+## 2026-09-24 — controllers administrativos em processo separado
+
+Três comandos HTTP conectados ao núcleo, com audiência exclusiva, ACR/auth_time assinados recentes, client allowlist, credencial própria e guard por coluna. Hosting compartilhado; JSON estrito, no-store e timeout cooperativo.49 testes focados aprovados, inclusive Kestrel TLS e recuperação após bloqueio de linha. Primeiros erros do harness corrigidos (seed, restauração de grants, cliente HTTP). Gate completo detectou503 indevido para falha de integridade; mapper corrigido para preservar500 e usar503 para falhas transitórias. Resultado final:262/262 testes,26 regras,12 checks aprovados; publish local separado dos dois hosts validado. Relatório2026-09-24-administrative-http; sem performance/produção/1M validadas.
+
 ## 2026-09-23 — núcleo transacional de administração
 
 Implementados ManageMembers, delegação limitada, versionamento, histórico/recibo append-only e transação Serializable com retry limitado. Dois administradores não removem simultaneamente o último acesso; 100 repetições e 100 versões concorrentes preservam efeito único. Role administrativa restrita testada, API comum sem registro/grants para comandos, GETs de membros com version. Migration Small preserva dados e recusa Down destrutivo; receita v2 inclui novo schema. Gate final:213/213 testes,26 regras,12 checks. Relatório2026-09-23-membership-administration-core; ADR-016. Host administrativo, MFA/controllers, performance e produção continuam pendentes.
